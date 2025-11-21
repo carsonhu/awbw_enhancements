@@ -260,6 +260,22 @@ let kKeyboardOptionsMapping = [
             `Keyboard shortcut to quickly capture a property with Infantry or Mech.`,
         ],
     }, {
+        id: "quick-wait-hotkey",
+        name: "options_bindings_quick_wait_hotkey",
+        default: [83 /*s*/],
+        label: "Quick Wait",
+        description: [
+            `Keyboard shortcut to quickly wait a unit.`,
+        ],
+    }, {
+        id: "quick-unwait-hotkey",
+        name: "options_bindings_quick_unwait_hotkey",
+        default: [88 /*x*/],
+        label: "Quick Unwait",
+        description: [
+            `Keyboard shortcut to quickly unwait a unit.`,
+        ],
+    }, {
         id: "quick-build-infantry-hotkey",
         name: "options_bindings_quick_build_infantry_hotkey",
         default: [81 /*q*/],

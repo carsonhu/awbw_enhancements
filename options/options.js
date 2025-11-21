@@ -429,6 +429,57 @@ chrome.storage.sync.get(kOptionDefaults, (result) => {
         });
     });
 
+    let disableQuickActionsBtn = document.getElementById("disable-quick-actions-btn");
+    disableQuickActionsBtn.addEventListener("click", (event) => {
+        // List of all quick action hotkey options from Quick Move through End Turn
+        const quickActionOptions = [
+            "options_bindings_quick_move_hotkey",
+            "options_bindings_quick_convert_army_hotkey",
+            "options_bindings_quick_convert_neutral_hotkey",
+            "options_bindings_quick_remove_unit_hotkey",
+            "options_bindings_quick_capture_hotkey",
+            "options_bindings_quick_wait_hotkey",
+            "options_bindings_quick_unwait_hotkey",
+            "options_bindings_quick_build_infantry_hotkey",
+            "options_bindings_quick_build_mech_hotkey",
+            "options_bindings_quick_build_recon_hotkey",
+            "options_bindings_quick_build_tank_hotkey",
+            "options_bindings_quick_build_md_tank_hotkey",
+            "options_bindings_quick_build_neotank_hotkey",
+            "options_bindings_quick_build_megatank_hotkey",
+            "options_bindings_quick_build_apc_hotkey",
+            "options_bindings_quick_build_artillery_hotkey",
+            "options_bindings_quick_build_rocket_hotkey",
+            "options_bindings_quick_build_anti_air_hotkey",
+            "options_bindings_quick_build_missile_hotkey",
+            "options_bindings_quick_build_piperunner_hotkey",
+            "options_bindings_quick_build_t_copter_hotkey",
+            "options_bindings_quick_build_b_copter_hotkey",
+            "options_bindings_quick_build_fighter_hotkey",
+            "options_bindings_quick_build_bomber_hotkey",
+            "options_bindings_quick_build_stealth_hotkey",
+            "options_bindings_quick_build_black_boat_hotkey",
+            "options_bindings_quick_build_lander_hotkey",
+            "options_bindings_quick_build_cruiser_hotkey",
+            "options_bindings_quick_build_sub_hotkey",
+            "options_bindings_quick_build_battleship_hotkey",
+            "options_bindings_quick_build_carrier_hotkey",
+            "options_bindings_quick_build_black_bomb_hotkey",
+            "options_bindings_end_turn_hotkey"
+        ];
+
+        // Set all quick action hotkeys to empty arrays
+        let updatedOptions = {};
+        for (let optionName of quickActionOptions) {
+            updatedOptions[optionName] = [];
+        }
+
+        chrome.storage.sync.set(updatedOptions, () => {
+            setOptionsOnPage(updatedOptions);
+            inputs[0].dispatchEvent(new Event("change"));
+        });
+    });
+
     let form = document.getElementById("optionsForm");
     form.classList.remove("d-none");
 });

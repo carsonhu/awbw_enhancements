@@ -456,6 +456,20 @@ function initializeQuickActions(options) {
             return;
         }
 
+        // --- Quick Wait ---
+        let waitKeys = options.options_bindings_quick_wait_hotkey || [83]; // Default 'S'
+        if (waitKeys.includes(e.keyCode)) {
+            handleQuickAction(() => clickWaitOption(), 0);
+            return;
+        }
+
+        // --- Quick Unwait ---
+        let unwaitKeys = options.options_bindings_quick_unwait_hotkey || [88]; // Default 'X'
+        if (unwaitKeys.includes(e.keyCode)) {
+            handleQuickAction(() => clickUnwaitOption(), 0);
+            return;
+        }
+
         // --- Quick Build (Unit Specific) ---
         // Define buildable units for each facility type
         const kBaseUnits = [
@@ -605,6 +619,19 @@ function clickCaptureOption() {
     }
 }
 
+function clickWaitOption() {
+    let waitOption = document.getElementById("wait");
+    if (waitOption) {
+        waitOption.click();
+    }
+}
+
+function clickUnwaitOption() {
+    let unwaitOption = document.getElementById("unwait");
+    if (unwaitOption) {
+        unwaitOption.click();
+    }
+}
 
 function clickBuildOption(unitNames) {
     // unitNames is an array of strings, e.g. ["Infantry", "T-Copter", "Black Boat"]
