@@ -222,10 +222,74 @@ let kKeyboardOptionsMapping = [
     }, {
         id: "quick-move-hotkey",
         name: "options_bindings_quick_move_hotkey",
-        default: [77 /*m*/],
+        default: [66 /*b*/],
         label: "Quick Move",
         description: [
             `Keyboard shortcut for quickly moving a unit. Hover over a unit and press this key to immediately select "Move".`,
+        ],
+    }, {
+        id: "quick-convert-army-hotkey",
+        name: "options_bindings_quick_convert_army_hotkey",
+        default: [86 /*v*/],
+        label: "Quick Convert (Army)",
+        description: [
+            `Keyboard shortcut to convert a building to your army's color (when an infantry is on it).`,
+        ],
+    }, {
+        id: "quick-convert-neutral-hotkey",
+        name: "options_bindings_quick_convert_neutral_hotkey",
+        default: [78 /*n*/],
+        label: "Quick Convert (Neutral)",
+        description: [
+            `Keyboard shortcut to convert a building to neutral (when an infantry is on it).`,
+        ],
+    }, {
+        id: "quick-remove-unit-hotkey",
+        name: "options_bindings_quick_remove_unit_hotkey",
+        default: [71 /*g*/],
+        label: "Quick Remove Unit",
+        description: [
+            `Keyboard shortcut to remove a unit. Hover over a unit and press this key to select "Remove".`,
+        ],
+    }, {
+        id: "quick-build-slot-1-hotkey",
+        name: "options_bindings_quick_build_slot_1_hotkey",
+        default: [81 /*q*/],
+        label: "Quick Build Slot 1 (Q)",
+        description: [
+            `Builds Infantry (Base), T-Copter (Airport), or Black Boat (Port).`,
+        ],
+    }, {
+        id: "quick-build-slot-2-hotkey",
+        name: "options_bindings_quick_build_slot_2_hotkey",
+        default: [87 /*w*/],
+        label: "Quick Build Slot 2 (W)",
+        description: [
+            `Builds Recon (Base), B-Copter (Airport), or Lander (Port).`,
+        ],
+    }, {
+        id: "quick-build-slot-3-hotkey",
+        name: "options_bindings_quick_build_slot_3_hotkey",
+        default: [69 /*e*/],
+        label: "Quick Build Slot 3 (E)",
+        description: [
+            `Builds Artillery (Base), Fighter (Airport), or Cruiser (Port).`,
+        ],
+    }, {
+        id: "quick-build-slot-4-hotkey",
+        name: "options_bindings_quick_build_slot_4_hotkey",
+        default: [82 /*r*/],
+        label: "Quick Build Slot 4 (R)",
+        description: [
+            `Builds Tank (Base), Bomber (Airport), or Sub (Port).`,
+        ],
+    }, {
+        id: "quick-build-slot-5-hotkey",
+        name: "options_bindings_quick_build_slot_5_hotkey",
+        default: [84 /*t*/],
+        label: "Quick Build Slot 5 (T)",
+        description: [
+            `Builds Anti-Air (Base), Stealth (Airport), or Battleship (Port).`,
         ],
     },
 ];

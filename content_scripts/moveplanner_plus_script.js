@@ -357,20 +357,33 @@ function injectRequestedStyles(options) {
 
 // --- Quick Move Hotkey Implementation ---
 
-let hoveredUnit = null;
+let hoveredEntity = null;
 
-function initializeQuickMove(options) {
-    // Track hovered unit
+function initializeQuickActions(options) {
+    // Track hovered entity (unit or building)
     document.addEventListener('mouseover', (e) => {
         let target = e.target;
-        // Units are typically in spans with id starting with 'unit_' or class 'game-unit'
-        // We look for the span that contains the unit image
+        // Units are typically in spans with id starting with 'unit_'
         let unitSpan = target.closest("span[id^='unit_']");
         if (unitSpan) {
-            hoveredUnit = unitSpan;
-        } else {
-            hoveredUnit = null;
+            hoveredEntity = unitSpan;
+            return;
         }
+
+        // Buildings don't always have a nice ID, but they are clickable elements on the map.
+        // We can check if we are hovering over a span inside the gamemap that isn't a unit.
+        // This is a bit broad, but since we only click on hotkey press, it should be safe.
+        let mapContainer = document.getElementById("gamemap");
+        if (mapContainer && mapContainer.contains(target)) {
+            // Check if it's a span (tiles are spans)
+            let tileSpan = target.closest("span");
+            if (tileSpan) {
+                hoveredEntity = tileSpan;
+                return;
+            }
+        }
+
+        hoveredEntity = null;
     });
 
     document.addEventListener('keydown', (e) => {
@@ -384,35 +397,178 @@ function initializeQuickMove(options) {
             return;
         }
 
-        let quickMoveKeys = options.options_bindings_quick_move_hotkey || [77]; // Default to 'M' (77)
+        // --- Quick Move ---
+        let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
 
-        // Check if the pressed key matches the configured hotkey
         if (quickMoveKeys.includes(e.keyCode)) {
-            let optionsMenu = document.getElementById("options-menu");
-            let menuVisible = optionsMenu && optionsMenu.style.display !== "none" && optionsMenu.style.display !== "";
+            handleQuickAction(() => clickMoveOption(), 0);
+            return;
+        }
 
-            if (menuVisible) {
-                // Menu is open, click 'Move'
-                clickMoveOption();
-            } else if (hoveredUnit) {
-                // Menu is closed, but hovering over a unit
-                // 1. Click the unit to open the menu
-                // We need to click the image inside the span if possible, or the span itself
-                let clickTarget = hoveredUnit.querySelector("img") || hoveredUnit;
-                clickTarget.click();
+        // --- Quick Set HP ---
+        // Check for number keys 0-9
+        // Key codes: 48 ('0') to 57 ('9')
+        if (e.keyCode >= 48 && e.keyCode <= 57) {
+            let hpValue = e.keyCode - 48;
+            if (hpValue === 0) hpValue = 10;
 
-                // 2. Wait a brief moment for menu to appear (it's usually synchronous or very fast)
-                // Then click 'Move'
-                setTimeout(clickMoveOption, 0);
-            }
+            handleQuickAction(() => setUnitHp(hpValue), 0);
+        }
+
+        // --- Quick Convert Building ---
+        let convertArmyKeys = options.options_bindings_quick_convert_army_hotkey || [86]; // Default 'V'
+        if (convertArmyKeys.includes(e.keyCode)) {
+            handleQuickAction(() => convertBuilding(0), 0); // 0 = First option (Army)
+            return;
+        }
+
+        let convertNeutralKeys = options.options_bindings_quick_convert_neutral_hotkey || [78]; // Default 'N'
+        if (convertNeutralKeys.includes(e.keyCode)) {
+            handleQuickAction(() => convertBuilding(1), 0); // 1 = Second option (Neutral)
+            return;
+        }
+
+        // --- Quick Remove Unit ---
+        let removeUnitKeys = options.options_bindings_quick_remove_unit_hotkey || [71]; // Default 'G'
+        if (removeUnitKeys.includes(e.keyCode)) {
+            handleQuickAction(() => clickRemoveOption(), 0);
+            return;
+        }
+
+        // --- Quick Build Slots ---
+        // Slot 1 (Q): Infantry, T-Copter, Black Boat
+        let buildSlot1Keys = options.options_bindings_quick_build_slot_1_hotkey || [81]; // Default 'Q'
+        if (buildSlot1Keys.includes(e.keyCode)) {
+            handleQuickAction(() => clickBuildOption(["Infantry", "T-Copter", "Black Boat"]), 50);
+            return;
+        }
+
+        // Slot 2 (W): Recon, B-Copter, Lander
+        let buildSlot2Keys = options.options_bindings_quick_build_slot_2_hotkey || [87]; // Default 'W'
+        if (buildSlot2Keys.includes(e.keyCode)) {
+            handleQuickAction(() => clickBuildOption(["Recon", "B-Copter", "Lander"]), 50);
+            return;
+        }
+
+        // Slot 3 (E): Artillery, Fighter, Cruiser
+        let buildSlot3Keys = options.options_bindings_quick_build_slot_3_hotkey || [69]; // Default 'E'
+        if (buildSlot3Keys.includes(e.keyCode)) {
+            handleQuickAction(() => clickBuildOption(["Artillery", "Fighter", "Cruiser"]), 50);
+            return;
+        }
+
+        // Slot 4 (R): Tank, Bomber, Sub
+        let buildSlot4Keys = options.options_bindings_quick_build_slot_4_hotkey || [82]; // Default 'R'
+        if (buildSlot4Keys.includes(e.keyCode)) {
+            handleQuickAction(() => clickBuildOption(["Tank", "Bomber", "Sub"]), 50);
+            return;
+        }
+
+        // Slot 5 (T): Anti-Air, Stealth, Battleship
+        let buildSlot5Keys = options.options_bindings_quick_build_slot_5_hotkey || [84]; // Default 'T'
+        if (buildSlot5Keys.includes(e.keyCode)) {
+            handleQuickAction(() => clickBuildOption(["Anti-Air", "Stealth", "Battleship"]), 50);
+            return;
         }
     });
+}
+
+function handleQuickAction(actionCallback, delay = 0) {
+    let optionsMenu = document.getElementById("options-menu");
+    let buildMenu = document.getElementById("build-menu");
+
+    let menuVisible = (optionsMenu && optionsMenu.style.display !== "none" && optionsMenu.style.display !== "") ||
+        (buildMenu && buildMenu.style.display !== "none" && buildMenu.style.display !== "");
+
+    if (menuVisible) {
+        // Menu is open, perform action immediately
+        actionCallback();
+    } else if (hoveredEntity) {
+        // Menu is closed, but hovering over a unit/building
+        // 1. Click the entity to open the menu
+        let clickTarget = hoveredEntity.querySelector("img") || hoveredEntity;
+        clickTarget.click();
+
+        // 2. Wait a brief moment for menu to appear
+        // Then perform action
+        setTimeout(actionCallback, delay);
+    }
+}
+
+function setUnitHp(hp) {
+    let hpInput = document.getElementById("hp");
+    if (hpInput) {
+        hpInput.value = hp;
+        // Dispatch events so the site recognizes the change
+        hpInput.dispatchEvent(new Event('input', { bubbles: true }));
+        hpInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Click the "Set HP" list item to confirm/apply
+        let setHpItem = document.getElementById("set-hp");
+        if (setHpItem) {
+            setHpItem.click();
+        }
+    }
+}
+
+function convertBuilding(optionIndex) {
+    // The building options are in a list inside #building-options
+    // They might take a moment to appear after the menu opens, so we poll for them.
+    let attempts = 0;
+    const maxAttempts = 50; // 50 * 10ms = 500ms max wait
+
+    function attemptClick() {
+        let buildingOptionsList = document.getElementById("building-options");
+        if (buildingOptionsList) {
+            let options = buildingOptionsList.querySelectorAll("li");
+            if (options.length > optionIndex) {
+                // Click the image inside the list item, or the list item itself
+                let target = options[optionIndex].querySelector("img") || options[optionIndex];
+                target.click();
+                return;
+            }
+        }
+
+        attempts++;
+        if (attempts < maxAttempts) {
+            setTimeout(attemptClick, 10);
+        }
+    }
+
+    attemptClick();
 }
 
 function clickMoveOption() {
     let moveOption = document.getElementById("move");
     if (moveOption) {
         moveOption.click();
+    }
+}
+
+function clickRemoveOption() {
+    // Use querySelector to target the list item specifically, avoiding the img with the same ID
+    let removeOption = document.querySelector("li#remove");
+    if (removeOption) {
+        removeOption.click();
+    }
+}
+
+function clickBuildOption(unitNames) {
+    // unitNames is an array of strings, e.g. ["Infantry", "T-Copter", "Black Boat"]
+    // We click the first one that appears in the menu.
+    let buildMenu = document.getElementById("build-menu");
+    if (buildMenu) {
+        let unitsList = buildMenu.querySelector("ul#units");
+        if (unitsList) {
+            let items = unitsList.querySelectorAll("li");
+            for (let item of items) {
+                let itemText = item.textContent.trim();
+                if (unitNames.includes(itemText)) {
+                    item.click();
+                    return;
+                }
+            }
+        }
     }
 }
 
@@ -457,7 +613,7 @@ function injectRequestedScripts(options, done) {
 
 OptionsReader.instance().onOptionsReady((options) => {
     injectRequestedStyles(options);
-    initializeQuickMove(options);
+    initializeQuickActions(options);
     // Inject scripts before performing other setup so that all of the patches are in place.
     injectRequestedScripts(options, async () => {
         if (!options.options_enable_moveplanner_plus) {
