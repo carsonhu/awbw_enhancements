@@ -135,6 +135,30 @@
   border-color: rgb(58, 158, 230);
 }
 
+.awbwenhancements-ne-player-banner {
+  background: linear-gradient(to right, rgb(80, 80, 80), rgb(40, 40, 40));
+}
+
+.awbwenhancements-ne-player-border {
+  border-color: rgb(40, 40, 40);
+}
+
+.awbwenhancements-sc-player-banner {
+  background: linear-gradient(to right, rgb(180, 190, 200), rgb(140, 150, 160));
+}
+
+.awbwenhancements-sc-player-border {
+  border-color: rgb(140, 150, 160);
+}
+
+.awbwenhancements-uw-player-banner {
+  background: linear-gradient(to right, rgb(210, 120, 30), rgb(160, 80, 10));
+}
+
+.awbwenhancements-uw-player-border {
+  border-color: rgb(160, 80, 10);
+}
+
 .awbwenhancements-btn {
     display: flex;
     height: 20px;

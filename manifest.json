@@ -1,0 +1,93 @@
+{
+    "name": "AWBW Enhancements",
+    "description": "Replay keyboard shortcuts and moveplanner enhancements for Advance Wars By Web.",
+    "version": "2024.5.22.0",
+    "icons": {
+        "16": "/res/images/fighter_icon16.png",
+        "32": "/res/images/fighter_icon32.png",
+        "48": "/res/images/fighter_icon48.png",
+        "128": "/res/images/fighter_icon128.png"
+    },
+    "options_ui": {
+        "open_in_tab": true,
+        "page": "options/options.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://awbw.amarriner.com/game.php*"
+            ],
+            "js": [
+                "options/options_definitions.js",
+                "lib/options_reader.js",
+                "content_scripts/toggle_calculator_shortcut_script.js",
+                "content_scripts/rate_limit_workaround_script.js",
+                "content_scripts/speedy_event_panel_script.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://awbw.amarriner.com/damage.php"
+            ],
+            "css": [
+                "res/awbw_enhancements.css"
+            ],
+            "js": [
+                "options/options_definitions.js",
+                "lib/options_reader.js",
+                "content_scripts/enhanced_damage_chart_script.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://awbw.amarriner.com/moveplanner.php*"
+            ],
+            "css": [
+                "res/awbw_enhancements.css"
+            ],
+            "js": [
+                "vendor/purify.min.js",
+                "lib/util.js",
+                "lib/game_data.js",
+                "options/options_definitions.js",
+                "lib/options_reader.js",
+                "lib/profile_settings_reader.js",
+                "lib/game_state_parser.js",
+                "lib/build_menu_listener.js",
+                "lib/co_select_panel.js",
+                "lib/cursor_tracker.js",
+                "lib/move_range_preview.js",
+                "lib/player_panel.js",
+                "lib/players_panel.js",
+                "lib/savestate_interceptor.js",
+                "lib/savestate_manager.js",
+                "content_scripts/toggle_calculator_shortcut_script.js",
+                "content_scripts/moveplanner_plus_script.js"
+            ]
+        }
+    ],
+    "manifest_version": 3,
+    "permissions": [
+        "storage",
+        "downloads"
+    ],
+    "background": {
+        "service_worker": "background/service_worker.js"
+    },
+    "host_permissions": [
+        "https://awbw.amarriner.com/*"
+    ],
+    "web_accessible_resources": [
+        {
+            "matches": [
+                "https://awbw.amarriner.com/*"
+            ],
+            "resources": [
+                "/res/axios_throttler.js",
+                "/res/playersinfo_patcher.js",
+                "/res/savestate_injector.js",
+                "/res/unitsinfo_patcher.js"
+            ]
+        }
+    ]
+}
