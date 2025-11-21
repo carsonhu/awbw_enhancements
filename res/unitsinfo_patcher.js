@@ -1,8 +1,8 @@
-(function() {
+(function () {
     let options = (() => {
         let firstHash = document.currentScript.src.indexOf("#");
         if (firstHash === -1) return {};
-        let optionsJson = document.currentScript.src.substring(firstHash+1);
+        let optionsJson = document.currentScript.src.substring(firstHash + 1);
         return JSON.parse(decodeURIComponent(optionsJson));
     })();
     console.log("Patcher observed options:", options);
@@ -73,6 +73,19 @@
                             let fixedHpImgSrc = img.src.replace("/?.gif", "/qhp.gif");
                             img.src = fixedHpImgSrc;
                         }
+                    }
+                }
+
+                // Fix for pre-deployed units with full HP showing null.gif after savestate restore
+                // When a unit has full HP (10), the HP icon should be hidden, but savestate
+                // restoration sets it to src="terrain/aw2/null.gif" instead
+                for (let img of imgs) {
+                    if (img.id && img.id.includes('rightIcon') && img.src.endsWith('/null.gif')) {
+                        console.log("Fixing null.gif HP icon for unit:", unitId);
+                        // Hide the icon instead of showing broken null.gif
+                        img.style.display = 'none';
+                        // Set proper src for consistency
+                        img.src = img.src.replace('/null.gif', '/10.gif');
                     }
                 }
 
@@ -176,7 +189,7 @@
         patchUnitsInfo();
         patchBuildings();
     });
-    observer.observe(gamemap, {subtree: true, childList: true});
+    observer.observe(gamemap, { subtree: true, childList: true });
 
     // Trigger initial patching even without any events.
     patchUnitsInfo();

@@ -1,31 +1,31 @@
 const kNameOverrides = {
-    8:   "Backspace",
-    9:   "Tab",
-    13:  "Enter",
-    16:  "Shift",
-    17:  "Ctrl",
-    18:  "Alt",
-    19:  "Pause/Break",
-    20:  "Caps Lock",
-    27:  "Esc",
-    32:  "Spacebar",
-    33:  "Page Up",
-    34:  "Page Down",
-    35:  "End",
-    36:  "Home",
-    37:  "Left Arrow",
-    38:  "Up Arrow",
-    39:  "Right Arrow",
-    40:  "Down Arrow",
-    45:  "Insert",
-    46:  "Delete",
-    91:  "Left Meta",
-    92:  "Right Meta[1]",
-    93:  "Right Meta[2]",
-    96:  "Num 0",
-    97:  "Num 1",
-    98:  "Num 2",
-    99:  "Num 3",
+    8: "Backspace",
+    9: "Tab",
+    13: "Enter",
+    16: "Shift",
+    17: "Ctrl",
+    18: "Alt",
+    19: "Pause/Break",
+    20: "Caps Lock",
+    27: "Esc",
+    32: "Spacebar",
+    33: "Page Up",
+    34: "Page Down",
+    35: "End",
+    36: "Home",
+    37: "Left Arrow",
+    38: "Up Arrow",
+    39: "Right Arrow",
+    40: "Down Arrow",
+    45: "Insert",
+    46: "Delete",
+    91: "Left Meta",
+    92: "Right Meta[1]",
+    93: "Right Meta[2]",
+    96: "Num 0",
+    97: "Num 1",
+    98: "Num 2",
+    99: "Num 3",
     100: "Num 4",
     101: "Num 5",
     102: "Num 6",
@@ -63,7 +63,7 @@ const kNameOverrides = {
     222: "'",
 };
 function keyCodeToName(keyCode) {
-    keyCode = keyCode+0;
+    keyCode = keyCode + 0;
     let override = kNameOverrides[keyCode];
     if (override !== undefined) { return override; }
     let other = String.fromCharCode(keyCode);
@@ -141,7 +141,7 @@ class KeybindListener {
 }
 
 class KeybindOption {
-    constructor(optionId, name, keybindListener){
+    constructor(optionId, name, keybindListener) {
         this.optionId = optionId;
         this.name = name;
         this.keybindListener = keybindListener;
@@ -255,15 +255,26 @@ function initializeRangeOptions() {
     }
 }
 
-const kMaxKeyboardBindings = 4;
+const kMaxKeyboardBindings = 2;
 function templateKeyboardOption(mapping) {
     let description = templateDescription(mapping.description);
     let bindingHtml = "";
-    for (let i = 1; i <= kMaxKeyboardBindings; i++) {
+    let maxBindings = mapping.image ? 1 : kMaxKeyboardBindings;
+    for (let i = 1; i <= maxBindings; i++) {
         bindingHtml += `
 <div class="col">
-  <input type="text" readonly class="form-control" id="${mapping.id}-${i}">
+  <input type="text" readonly class="form-control ${mapping.image ? 'form-control-sm' : ''}" id="${mapping.id}-${i}">
 </div>`;
+    }
+
+    if (mapping.image) {
+        return `
+  <div class="d-flex align-items-center">
+    <img src="${mapping.image}" class="me-2" title="${mapping.label}" style="width: 16px; height: 16px;">
+    <div class="flex-grow-1 row g-1">
+      ${bindingHtml}
+    </div>
+  </div>`;
     }
 
     return `
@@ -280,7 +291,8 @@ function initializeKeyboardOptions() {
         let container = document.getElementById(optionMapping.id + "-container");
         container.innerHTML = DOMPurify.sanitize(templateKeyboardOption(optionMapping));
 
-        for (let i = 1; i <= kMaxKeyboardBindings; i++) {
+        let maxBindings = optionMapping.image ? 1 : kMaxKeyboardBindings;
+        for (let i = 1; i <= maxBindings; i++) {
             let inputId = optionMapping.id + "-" + i;
             keybindListener.addKeybindOption(new KeybindOption(inputId, optionMapping.label, keybindListener));
         }

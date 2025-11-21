@@ -358,6 +358,7 @@ function injectRequestedStyles(options) {
 // --- Quick Move Hotkey Implementation ---
 
 let hoveredEntity = null;
+let quickMoveStartTime = 0;
 
 function initializeQuickActions(options) {
     // Track hovered entity (unit or building)
@@ -386,6 +387,18 @@ function initializeQuickActions(options) {
         hoveredEntity = null;
     });
 
+    document.addEventListener('keyup', (e) => {
+        let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
+        if (quickMoveKeys.includes(e.keyCode)) {
+            let duration = Date.now() - quickMoveStartTime;
+            if (duration > 200) {
+                // Drag-and-drop behavior: if held for > 200ms, confirm move on release
+                handleQuickAction(() => clickMoveOption(), 0);
+            }
+            quickMoveStartTime = 0;
+        }
+    });
+
     document.addEventListener('keydown', (e) => {
         // Ignore if user is typing in an input field
         if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
@@ -401,6 +414,7 @@ function initializeQuickActions(options) {
         let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
 
         if (quickMoveKeys.includes(e.keyCode)) {
+            quickMoveStartTime = Date.now();
             handleQuickAction(() => clickMoveOption(), 0);
             return;
         }
@@ -435,39 +449,70 @@ function initializeQuickActions(options) {
             return;
         }
 
-        // --- Quick Build Slots ---
-        // Slot 1 (Q): Infantry, T-Copter, Black Boat
-        let buildSlot1Keys = options.options_bindings_quick_build_slot_1_hotkey || [81]; // Default 'Q'
-        if (buildSlot1Keys.includes(e.keyCode)) {
-            handleQuickAction(() => clickBuildOption(["Infantry", "T-Copter", "Black Boat"]), 50);
+        // --- Quick Capture ---
+        let captureKeys = options.options_bindings_quick_capture_hotkey || [70]; // Default 'F'
+        if (captureKeys.includes(e.keyCode)) {
+            handleQuickAction(() => clickCaptureOption(), 0);
             return;
         }
 
-        // Slot 2 (W): Recon, B-Copter, Lander
-        let buildSlot2Keys = options.options_bindings_quick_build_slot_2_hotkey || [87]; // Default 'W'
-        if (buildSlot2Keys.includes(e.keyCode)) {
-            handleQuickAction(() => clickBuildOption(["Recon", "B-Copter", "Lander"]), 50);
-            return;
+        // --- Quick Build (Unit Specific) ---
+        // Define buildable units for each facility type
+        const kBaseUnits = [
+            { name: "Infantry", option: "options_bindings_quick_build_infantry_hotkey" },
+            { name: "Mech", option: "options_bindings_quick_build_mech_hotkey" },
+            { name: "Recon", option: "options_bindings_quick_build_recon_hotkey" },
+            { name: "Tank", option: "options_bindings_quick_build_tank_hotkey" },
+            { name: "Md.Tank", option: "options_bindings_quick_build_md_tank_hotkey" },
+            { name: "Neotank", option: "options_bindings_quick_build_neotank_hotkey" },
+            { name: "Mega Tank", option: "options_bindings_quick_build_megatank_hotkey" },
+            { name: "APC", option: "options_bindings_quick_build_apc_hotkey" },
+            { name: "Artillery", option: "options_bindings_quick_build_artillery_hotkey" },
+            { name: "Rocket", option: "options_bindings_quick_build_rocket_hotkey" },
+            { name: "Anti-Air", option: "options_bindings_quick_build_anti_air_hotkey" },
+            { name: "Missile", option: "options_bindings_quick_build_missile_hotkey" },
+            { name: "Piperunner", option: "options_bindings_quick_build_piperunner_hotkey" },
+        ];
+        const kAirportUnits = [
+            { name: "T-Copter", option: "options_bindings_quick_build_t_copter_hotkey" },
+            { name: "B-Copter", option: "options_bindings_quick_build_b_copter_hotkey" },
+            { name: "Fighter", option: "options_bindings_quick_build_fighter_hotkey" },
+            { name: "Bomber", option: "options_bindings_quick_build_bomber_hotkey" },
+            { name: "Stealth", option: "options_bindings_quick_build_stealth_hotkey" },
+            { name: "Black Bomb", option: "options_bindings_quick_build_black_bomb_hotkey" },
+        ];
+        const kPortUnits = [
+            { name: "Black Boat", option: "options_bindings_quick_build_black_boat_hotkey" },
+            { name: "Lander", option: "options_bindings_quick_build_lander_hotkey" },
+            { name: "Cruiser", option: "options_bindings_quick_build_cruiser_hotkey" },
+            { name: "Sub", option: "options_bindings_quick_build_sub_hotkey" },
+            { name: "Battleship", option: "options_bindings_quick_build_battleship_hotkey" },
+            { name: "Carrier", option: "options_bindings_quick_build_carrier_hotkey" },
+        ];
+
+        let buildableUnits = [];
+        if (hoveredEntity) {
+            let src = hoveredEntity.querySelector("img")?.getAttribute("src") || "";
+            if (src.includes("base")) buildableUnits = kBaseUnits;
+            else if (src.includes("airport")) buildableUnits = kAirportUnits;
+            else if (src.includes("port")) buildableUnits = kPortUnits;
         }
 
-        // Slot 3 (E): Artillery, Fighter, Cruiser
-        let buildSlot3Keys = options.options_bindings_quick_build_slot_3_hotkey || [69]; // Default 'E'
-        if (buildSlot3Keys.includes(e.keyCode)) {
-            handleQuickAction(() => clickBuildOption(["Artillery", "Fighter", "Cruiser"]), 50);
-            return;
+        for (let unit of buildableUnits) {
+            let hotkeys = options[unit.option] || [];
+            if (hotkeys.includes(e.keyCode)) {
+                handleQuickAction(() => clickBuildOption([unit.name]), 50);
+                return;
+            }
         }
 
-        // Slot 4 (R): Tank, Bomber, Sub
-        let buildSlot4Keys = options.options_bindings_quick_build_slot_4_hotkey || [82]; // Default 'R'
-        if (buildSlot4Keys.includes(e.keyCode)) {
-            handleQuickAction(() => clickBuildOption(["Tank", "Bomber", "Sub"]), 50);
-            return;
-        }
-
-        // Slot 5 (T): Anti-Air, Stealth, Battleship
-        let buildSlot5Keys = options.options_bindings_quick_build_slot_5_hotkey || [84]; // Default 'T'
-        if (buildSlot5Keys.includes(e.keyCode)) {
-            handleQuickAction(() => clickBuildOption(["Anti-Air", "Stealth", "Battleship"]), 50);
+        // --- End Turn (M) ---
+        let endTurnKeys = options.options_bindings_end_turn_hotkey || [77]; // Default 'M'
+        if (endTurnKeys.includes(e.keyCode)) {
+            let endTurnBtn = document.querySelector(".js-end-turn-btn");
+            if (endTurnBtn && endTurnBtn.offsetParent !== null) { // Check if visible
+                endTurnBtn.click();
+            }
             return;
         }
     });
@@ -553,11 +598,24 @@ function clickRemoveOption() {
     }
 }
 
+function clickCaptureOption() {
+    let captureOption = document.getElementById("capture");
+    if (captureOption) {
+        captureOption.click();
+    }
+}
+
+
 function clickBuildOption(unitNames) {
     // unitNames is an array of strings, e.g. ["Infantry", "T-Copter", "Black Boat"]
     // We click the first one that appears in the menu.
     let buildMenu = document.getElementById("build-menu");
     if (buildMenu) {
+        // Ensure the menu is actually visible before clicking anything
+        if (buildMenu.style.display === "none" || buildMenu.offsetParent === null) {
+            return;
+        }
+
         let unitsList = buildMenu.querySelector("ul#units");
         if (unitsList) {
             let items = unitsList.querySelectorAll("li");
@@ -571,9 +629,6 @@ function clickBuildOption(unitNames) {
         }
     }
 }
-
-// Call initialization
-// initializeQuickMove(options); // Moved to inside OptionsReader callback
 
 
 function injectRequestedScripts(options, done) {
