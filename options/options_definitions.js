@@ -219,6 +219,14 @@ let kKeyboardOptionsMapping = [
         description: [
             `Keyboard shortcut to hold for "quick attack range preview". Useful for showing indirect ranges.`,
         ],
+    }, {
+        id: "quick-move-hotkey",
+        name: "options_bindings_quick_move_hotkey",
+        default: [77 /*m*/],
+        label: "Quick Move",
+        description: [
+            `Keyboard shortcut for quickly moving a unit. Hover over a unit and press this key to immediately select "Move".`,
+        ],
     },
 ];
 

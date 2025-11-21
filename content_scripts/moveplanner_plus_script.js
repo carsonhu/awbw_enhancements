@@ -109,7 +109,7 @@ async function getInitialPlayerState(options, mapEntities) {
         let isFirst = true;
         for (let country of kCountries) {
             if (country.flatName === "neutral"
-             || !propertiesByCountry.hasOwnProperty(country.code)) {
+                || !propertiesByCountry.hasOwnProperty(country.code)) {
                 continue;
             }
 
@@ -171,6 +171,172 @@ async function getMergedTerrainInfo() {
     return mergedTerrainInfo;
 }
 
+// Static mapping of tile patterns that have weather variants
+// Tiles ending with these patterns will have _rain and _snow versions
+const kWeatherTilePatterns = [
+    // Terrain
+    "plain", "mountain", "woods", "forest", "river", "road", "bridge", "sea", "shoal", "reef",
+    // Buildings (all countries)
+    "hq", "city", "base", "airport", "port", "comtower", "lab", "factory",
+    // Neutral buildings
+    "neutral"
+];
+
+// Function to check if a tile filename should have weather variants
+function tileHasWeatherVariants(filename) {
+    // Remove path and extension
+    let basename = filename.split('/').pop().replace(/\.(gif|png)$/, '');
+
+    // Check if the basename (without _rain or _snow) matches any pattern
+    let cleanName = basename.replace(/_(rain|snow)$/, '');
+
+    return kWeatherTilePatterns.some(pattern => cleanName.includes(pattern));
+}
+
+// Function to update building tiles to match the selected weather
+// Note: Terrain tiles are rendered on canvas and cannot be modified
+function updateTileImages(weather) {
+    console.log("Updating building images for weather:", weather);
+
+    let gamemap = document.getElementById("gamemap");
+    if (!gamemap) {
+        console.log("Gamemap not found");
+        return;
+    }
+
+    // Find all building images (buildings are in spans with class game-building or id starting with building_)
+    let buildingSpans = gamemap.querySelectorAll("span.game-building, span[id^='building_']");
+
+    console.log("Found building spans:", buildingSpans.length);
+
+    for (let span of buildingSpans) {
+        let imgs = span.getElementsByTagName("img");
+        for (let img of imgs) {
+            let src = img.src;
+            if (!src) continue;
+
+            // Parse the URL
+            let url = new URL(src);
+            let pathname = url.pathname;
+            let filename = pathname.split('/').pop();
+
+            // Check if this building type has weather variants
+            if (!tileHasWeatherVariants(filename)) {
+                continue;
+            }
+
+            // Remove any existing weather suffix
+            let cleanFilename = filename.replace(/_(rain|snow)(\.(gif|png))$/, '$2');
+
+            // Add the appropriate weather suffix
+            let newFilename = cleanFilename;
+            if (weather === kWeatherRain) {
+                newFilename = cleanFilename.replace(/\.(gif|png)$/, '_rain.$1');
+            } else if (weather === kWeatherSnow) {
+                newFilename = cleanFilename.replace(/\.(gif|png)$/, '_snow.$1');
+            }
+            // For kWeatherClear, use cleanFilename as-is
+
+            // Update the image src
+            let newPathname = pathname.substring(0, pathname.lastIndexOf('/') + 1) + newFilename;
+            url.pathname = newPathname;
+            img.src = url.toString();
+        }
+    }
+
+    console.log("Building images updated");
+}
+
+function createWeatherToggle(parser) {
+    const weatherStates = [kWeatherClear, kWeatherRain, kWeatherSnow];
+    const weatherLabels = { [kWeatherClear]: "Clear", [kWeatherRain]: "Rain", [kWeatherSnow]: "Snow" };
+    let currentWeather = null; // null means use actual weather from game
+
+    // Create container for all weather buttons
+    let weatherContainer = document.createElement("span");
+    weatherContainer.id = "awbw-enhancements-weather-toggle";
+    weatherContainer.style.marginRight = "10px";
+
+    // Helper function to create a weather button
+    function createWeatherButton(weather) {
+        let button = document.createElement("button");
+        button.textContent = weatherLabels[weather];
+        button.style.marginLeft = "3px";
+        button.style.marginRight = "3px";
+        button.style.padding = "2px 8px";
+        button.style.cursor = "pointer";
+        button.style.border = "1px solid #999";
+        button.style.borderRadius = "3px";
+        button.style.backgroundColor = "#f0f0f0";
+        button.style.fontWeight = "normal";
+
+        // Add weather-specific styling
+        if (weather === kWeatherRain) {
+            button.style.color = "#4a90e2";
+        } else if (weather === kWeatherSnow) {
+            button.style.color = "#87ceeb";
+        }
+
+        button.addEventListener("click", () => {
+            currentWeather = weather;
+            parser.setWeatherOverride(weather);
+            updateTileImages(weather);
+            updateButtonStates();
+        });
+
+        return button;
+    }
+
+    // Create the three weather buttons
+    let clearButton = createWeatherButton(kWeatherClear);
+    let rainButton = createWeatherButton(kWeatherRain);
+    let snowButton = createWeatherButton(kWeatherSnow);
+
+    // Function to update button states (highlight active button)
+    function updateButtonStates() {
+        [clearButton, rainButton, snowButton].forEach(btn => {
+            btn.style.fontWeight = "normal";
+            btn.style.backgroundColor = "#f0f0f0";
+            btn.style.borderWidth = "1px";
+        });
+
+        let activeButton = null;
+        if (currentWeather === kWeatherClear) activeButton = clearButton;
+        else if (currentWeather === kWeatherRain) activeButton = rainButton;
+        else if (currentWeather === kWeatherSnow) activeButton = snowButton;
+
+        if (activeButton) {
+            activeButton.style.fontWeight = "bold";
+            activeButton.style.backgroundColor = "#d0d0d0";
+            activeButton.style.borderWidth = "2px";
+        }
+    }
+
+    weatherContainer.appendChild(clearButton);
+    weatherContainer.appendChild(rainButton);
+    weatherContainer.appendChild(snowButton);
+
+    // Initialize with the actual weather from the game
+    currentWeather = parser.weatherCode;
+    updateButtonStates();
+    updateTileImages(currentWeather); // Initialize tile graphics to match current weather
+
+    // Find the Unwait All button and insert the weather toggle before it
+    let allDivs = document.querySelectorAll("div");
+    console.log("Weather toggle: searching through divs for Unwait All");
+    for (let div of allDivs) {
+        if (div.textContent.trim() === "Unwait All") {
+            console.log("Weather toggle: found Unwait All div:", div);
+            // Insert weather toggle before this div
+            div.parentNode.insertBefore(weatherContainer, div);
+            console.log("Weather toggle: inserted before Unwait All");
+            break;
+        }
+    }
+
+    return weatherContainer;
+}
+
 // TODO: support for "undo"
 
 function injectRequestedStyles(options) {
@@ -188,6 +354,71 @@ function injectRequestedStyles(options) {
     }`));
     (document.head || document.documentElement).appendChild(s);
 }
+
+// --- Quick Move Hotkey Implementation ---
+
+let hoveredUnit = null;
+
+function initializeQuickMove(options) {
+    // Track hovered unit
+    document.addEventListener('mouseover', (e) => {
+        let target = e.target;
+        // Units are typically in spans with id starting with 'unit_' or class 'game-unit'
+        // We look for the span that contains the unit image
+        let unitSpan = target.closest("span[id^='unit_']");
+        if (unitSpan) {
+            hoveredUnit = unitSpan;
+        } else {
+            hoveredUnit = null;
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        // Ignore if user is typing in an input field
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        // Ignore key repeats (holding down the key)
+        if (e.repeat) {
+            return;
+        }
+
+        let quickMoveKeys = options.options_bindings_quick_move_hotkey || [77]; // Default to 'M' (77)
+
+        // Check if the pressed key matches the configured hotkey
+        if (quickMoveKeys.includes(e.keyCode)) {
+            let optionsMenu = document.getElementById("options-menu");
+            let menuVisible = optionsMenu && optionsMenu.style.display !== "none" && optionsMenu.style.display !== "";
+
+            if (menuVisible) {
+                // Menu is open, click 'Move'
+                clickMoveOption();
+            } else if (hoveredUnit) {
+                // Menu is closed, but hovering over a unit
+                // 1. Click the unit to open the menu
+                // We need to click the image inside the span if possible, or the span itself
+                let clickTarget = hoveredUnit.querySelector("img") || hoveredUnit;
+                clickTarget.click();
+
+                // 2. Wait a brief moment for menu to appear (it's usually synchronous or very fast)
+                // Then click 'Move'
+                setTimeout(clickMoveOption, 0);
+            }
+        }
+    });
+}
+
+function clickMoveOption() {
+    let moveOption = document.getElementById("move");
+    if (moveOption) {
+        moveOption.click();
+    }
+}
+
+// Call initialization
+// initializeQuickMove(options); // Moved to inside OptionsReader callback
+
 
 function injectRequestedScripts(options, done) {
     let snapshotElement = document.createElement("div");
@@ -226,6 +457,7 @@ function injectRequestedScripts(options, done) {
 
 OptionsReader.instance().onOptionsReady((options) => {
     injectRequestedStyles(options);
+    initializeQuickMove(options);
     // Inject scripts before performing other setup so that all of the patches are in place.
     injectRequestedScripts(options, async () => {
         if (!options.options_enable_moveplanner_plus) {
@@ -250,6 +482,9 @@ OptionsReader.instance().onOptionsReady((options) => {
         parser.addListener((mapEntities) => {
             playersPanel.handleUpdate(mapEntities);
         });
+
+        // Create weather toggle button
+        createWeatherToggle(parser);
 
         let buildMenu = document.getElementById("build-menu");
         let buildMenuListener = new BuildMenuListener(buildMenu, initialMapEntities.properties);
@@ -294,7 +529,7 @@ OptionsReader.instance().onOptionsReady((options) => {
                 parser.handleMapUpdate();
             }
         });
-        observer.observe(gamemap, {subtree: true, childList: true, attributes: true});
+        observer.observe(gamemap, { subtree: true, childList: true, attributes: true });
 
         if (options.options_enable_bugfix_restore_clobbers_removed_unit_icons) {
             let removedUnitsPanel = document.getElementById("planner_removed_units");
@@ -306,7 +541,7 @@ OptionsReader.instance().onOptionsReady((options) => {
                             child.removeAttribute("id");
                         }
                     }
-                })).observe(removedUnitsPanel, {subtree: true, childList: true});
+                })).observe(removedUnitsPanel, { subtree: true, childList: true });
             }
         }
 
