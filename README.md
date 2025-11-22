@@ -25,7 +25,7 @@ The extension should now be installed and active.
 ### Quick Action Hotkeys
 This fork adds comprehensive keyboard shortcuts for common move planner actions:
 
-- **Quick Move (B)** - Quickly move a unit
+- **Quick Move (B)** - Quickly move a unit. Can also hold down B to drag and drop the unit to the new location.
 - **Quick Convert Army (V)** - Convert building to your army's color
 - **Quick Convert Neutral (N)** - Convert building to neutral
 - **Quick Remove Unit (G)** - Remove a unit
@@ -62,10 +62,10 @@ Hotkeys to instantly build a unit when hovering over a Base, Airport, or Port. B
 
 **Additional units** (Mech, Md. Tank, Neotank, APC, etc) can have custom hotkeys assigned in the move planner.
 
-All hotkeys are fully customizable in the move planner. A "Disable All Quick Action Hotkeys" button is available in case you only want the bug fixes and CO portrait / army color fixes.
+All hotkeys are fully customizable in the move planner. A "Disable All Quick Action Hotkeys" button is available in the extension options in case you only want the bug fixes and CO portrait / army color fixes.
 
 ### Weather Toggle
-This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow.
+This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow. This does not change the visuals much, but it does affect unit movement ranges.
 
 ### Bug Fixes
 - **Fixed CO portraits in move planner** - CO portraits were not being displayed in the move planner.
@@ -97,6 +97,7 @@ Here's an example of what the moveplanner looks like with AWBW Enhancements enab
 
 ## Credits
 
-- **Original Author:** [kbuzsaki](https://github.com/kbuzsaki) (saltor#4306 on AWBW Discord)
+- **Original Author:** [kbuzsaki](https://github.com/kbuzsaki) (saltor on AWBW Discord)
+- **Fork Author:** [carsonhu](https://github.com/carsonhu) (darthnoob on AWBW Discord)
 
 Please feel free to report bugs or request new features via a GitHub issue.
