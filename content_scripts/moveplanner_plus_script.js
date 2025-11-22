@@ -391,8 +391,8 @@ function initializeQuickActions(options) {
         let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
         if (quickMoveKeys.includes(e.keyCode)) {
             let duration = Date.now() - quickMoveStartTime;
-            if (duration > 200) {
-                // Drag-and-drop behavior: if held for > 200ms, confirm move on release
+            if (duration > 150) {
+                // Drag-and-drop behavior: if held for > 150ms, confirm move on release
                 handleQuickAction(() => clickMoveOption(), 0);
             }
             quickMoveStartTime = 0;

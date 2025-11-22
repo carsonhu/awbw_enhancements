@@ -1,13 +1,69 @@
-# AWBW Enhancements
+# AWBW Enhancements (Fork)
 
-"AWBW Enhancements" is a browser extension that adds some extra functionality to
-[Advance Wars By Web](https://awbw.amarriner.com).
+> **Note:** This is a fork of the original [AWBW Enhancements](https://github.com/saltorsauce/awbw_enhancements) by [saltorsauce](https://github.com/saltorsauce). All credit for the original extension goes to the original author.
 
-You can install it for Chrome and Microsoft Edge (and other Chromium-based browsers) 
-[here](https://chrome.google.com/webstore/detail/awbw-helper/cnkhdcnafdfffpkbbbeghbdjkabhbkfi)
-and for Firefox [here](https://addons.mozilla.org/en-US/firefox/addon/awbw-enhancements/).
+"AWBW Enhancements" is a browser extension that adds extra functionality to [Advance Wars By Web](https://awbw.amarriner.com).
 
-Its current functionality includes:
+## Installation
+
+The original extension can be installed for Chrome and Microsoft Edge (and other Chromium-based browsers) [here](https://chrome.google.com/webstore/detail/awbw-helper/cnkhdcnafdfffpkbbbeghbdjkabhbkfi) and for Firefox [here](https://addons.mozilla.org/en-US/firefox/addon/awbw-enhancements/).
+
+To use this fork, you'll need to load it as an unpacked extension in your browser.
+
+## Features Added in This Fork
+
+### Quick Action Hotkeys
+This fork adds comprehensive keyboard shortcuts for common move planner actions:
+
+- **Quick Move (B)** - Quickly move a unit
+- **Quick Convert Army (V)** - Convert building to your army's color
+- **Quick Convert Neutral (N)** - Convert building to neutral
+- **Quick Remove Unit (G)** - Remove a unit
+- **Quick Capture (F)** - Capture with Infantry/Mech
+- **Quick Wait (S)** - Wait a unit
+- **Quick Unwait (X)** - Unwait a unit
+- **End Turn (M)** - End your turn
+
+#### Quick Build Hotkeys
+
+Hotkeys to instantly build a unit when hovering over a Base, Airport, or Port. By default, (Q/W/E/R/T) keys are assigned to different units based on the building type:
+
+**Base Units:**
+- ![Infantry](https://awbw.amarriner.com/terrain/aw2/osinfantry.gif) **Infantry (Q)** 
+- ![Recon](https://awbw.amarriner.com/terrain/aw2/osrecon.gif) **Recon (W)**
+- ![Artillery](https://awbw.amarriner.com/terrain/aw2/osartillery.gif) **Artillery (E)**
+- ![Tank](https://awbw.amarriner.com/terrain/aw2/ostank.gif) **Tank (R)**
+- ![Anti-Air](https://awbw.amarriner.com/terrain/aw2/osanti-air.gif) **Anti-Air (T)**
+
+**Airport Units:**
+- ![T-Copter](https://awbw.amarriner.com/terrain/aw2/ost-copter.gif) **T-Copter (Q)**
+- ![B-Copter](https://awbw.amarriner.com/terrain/aw2/osb-copter.gif) **B-Copter (W)**
+- ![Fighter](https://awbw.amarriner.com/terrain/aw2/osfighter.gif) **Fighter (E)**
+- ![Bomber](https://awbw.amarriner.com/terrain/aw2/osbomber.gif) **Bomber (R)**
+- ![Stealth](https://awbw.amarriner.com/terrain/aw2/osstealth.gif) **Stealth (T)**
+
+**Port Units:**
+- ![Black Boat](https://awbw.amarriner.com/terrain/aw2/osblackboat.gif) **Black Boat (Q)**
+- ![Lander](https://awbw.amarriner.com/terrain/aw2/oslander.gif) **Lander (W)**
+- ![Cruiser](https://awbw.amarriner.com/terrain/aw2/oscruiser.gif) **Cruiser (E)**
+- ![Sub](https://awbw.amarriner.com/terrain/aw2/ossub.gif) **Sub (R)**
+- ![Battleship](https://awbw.amarriner.com/terrain/aw2/osbattleship.gif) **Battleship (T)**
+
+**Additional units** (Mech, Md. Tank, Neotank, APC, etc) can have custom hotkeys assigned in the extension options.
+
+All hotkeys are fully customizable in the extension options. A "Disable All Quick Action Hotkeys" button is available in case you only want the bug fixes and CO portrait / army color fixes.
+
+### Weather Toggle
+This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow.
+
+### Bug Fixes
+- **Fixed CO portraits in move planner** - CO portraits were not being displayed in the move planner.
+- **Added in support for new armies** - Extension now works for newly added armies in Advance Wars by Web.
+- **Pre-deployed unit HP icons** - Fixed broken HP icon sprites appearing on pre-deployed units with full HP after savestate restore
+
+## Original Features
+
+The original extension includes:
 
 1. Configurable keyboard shortcuts for replays.
 2. Several quality of life improvements to the move planner ("Moveplanner Plus"), including:
@@ -23,7 +79,14 @@ Its current functionality includes:
     4. The visual bug where capture icons are displayed for infantry that have already finished capturing.
     5. The visual bug where black boat sprites break when a savestate is uploaded.
 
-Please feel free to report bugs or request new features via a github issue or by contacting me (saltor#4306) in the AWBW discord :)
+## Screenshots
 
 Here's an example of what the moveplanner looks like with AWBW Enhancements enabled:
 ![screenshot of moveplanner plus](docs/images/demo_screenshot_2.png)
+
+## Credits
+
+- **Original Author:** [saltorsauce](https://github.com/saltorsauce) (saltor#4306 on AWBW Discord)
+- **Fork Maintainer:** This fork adds quick action hotkeys, weather toggle, and additional bug fixes
+
+Please feel free to report bugs or request new features via a GitHub issue.
