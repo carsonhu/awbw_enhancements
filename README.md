@@ -29,7 +29,7 @@ This fork adds comprehensive keyboard shortcuts for common move planner actions:
 - **Quick Convert Army (V)** - Convert building to your army's color
 - **Quick Convert Neutral (N)** - Convert building to neutral
 - **Quick Remove Unit (G)** - Remove a unit
-- **Quick Capture (F)** - Capture with Infantry/Mech
+- **Quick Capture (F)** - Set Infantry/Mech as capturing
 - **Quick Wait (S)** - Wait a unit
 - **Quick Unwait (X)** - Unwait a unit
 - **Set HP (1-0)** - Set unit HP (1-9 for 1-9 HP, 0 for 10 HP)
