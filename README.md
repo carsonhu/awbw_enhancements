@@ -8,7 +8,17 @@
 
 The original extension can be installed for Chrome and Microsoft Edge (and other Chromium-based browsers) [here](https://chrome.google.com/webstore/detail/awbw-helper/cnkhdcnafdfffpkbbbeghbdjkabhbkfi) and for Firefox [here](https://addons.mozilla.org/en-US/firefox/addon/awbw-enhancements/).
 
-To use this fork, you'll need to load it as an unpacked extension in your browser.
+To use this fork, you'll need to load it as an unpacked extension in your browser (Chrome/Edge/Brave/etc):
+
+1. **Download the code:** Clone this repository or download it as a ZIP file and extract it to a folder on your computer.
+2. **Open Extensions page:**
+    - **Chrome:** Go to `chrome://extensions`
+    - **Edge:** Go to `edge://extensions`
+3. **Enable Developer Mode:** Toggle the "Developer mode" switch (usually in the top right corner).
+4. **Load Unpacked:** Click the "Load unpacked" button that appears.
+5. **Select Folder:** Navigate to and select the folder containing the `manifest.json` file (the root folder of this repository).
+
+The extension should now be installed and active.
 
 ## Features Added in This Fork
 
