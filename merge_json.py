@@ -5,8 +5,13 @@ import json
 import sys
 
 def merge(lhs, rhs):
-    # TODO: make this smarter?
-    lhs.update(rhs)
+    for key, value in rhs.items():
+        if key in lhs and isinstance(lhs[key], dict) and isinstance(value, dict):
+            merge(lhs[key], value)
+        elif key in lhs and isinstance(lhs[key], list) and isinstance(value, list):
+            lhs[key].extend(value)
+        else:
+            lhs[key] = value
     return lhs
 
 if __name__ == "__main__":

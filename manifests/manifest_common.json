@@ -14,25 +14,36 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://awbw.amarriner.com/game.php*"],
+            "matches": [
+                "https://awbw.amarriner.com/game.php*"
+            ],
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
-                "content_scripts/toggle_calculator_shortcut_script.js",
                 "content_scripts/rate_limit_workaround_script.js",
                 "content_scripts/speedy_event_panel_script.js"
             ]
-        }, {
-            "matches": ["https://awbw.amarriner.com/damage.php"],
-            "css": ["res/awbw_enhancements.css"],
+        },
+        {
+            "matches": [
+                "https://awbw.amarriner.com/damage.php"
+            ],
+            "css": [
+                "res/awbw_enhancements.css"
+            ],
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
                 "content_scripts/enhanced_damage_chart_script.js"
             ]
-        }, {
-            "matches": ["https://awbw.amarriner.com/moveplanner.php*"],
-            "css": ["res/awbw_enhancements.css"],
+        },
+        {
+            "matches": [
+                "https://awbw.amarriner.com/moveplanner.php*"
+            ],
+            "css": [
+                "res/awbw_enhancements.css"
+            ],
             "js": [
                 "vendor/purify.min.js",
                 "lib/util.js",
@@ -49,7 +60,6 @@
                 "lib/players_panel.js",
                 "lib/savestate_interceptor.js",
                 "lib/savestate_manager.js",
-                "content_scripts/toggle_calculator_shortcut_script.js",
                 "content_scripts/moveplanner_plus_script.js"
             ]
         }

@@ -8,18 +8,27 @@
 
 The original extension can be installed for Chrome and Microsoft Edge (and other Chromium-based browsers) [here](https://chrome.google.com/webstore/detail/awbw-helper/cnkhdcnafdfffpkbbbeghbdjkabhbkfi) and for Firefox [here](https://addons.mozilla.org/en-US/firefox/addon/awbw-enhancements/).
 
-To use this fork, you'll need to load it as an unpacked extension in your browser (Chrome/Edge/Brave/etc):
+To use this fork, you'll need to load it as an unpacked extension.
 
-> **⚠️ Important:** If you have the original AWBW Enhancements extension installed from the Chrome Web Store or Firefox Add-ons, you must **disable or remove it first** to avoid conflicts. Both extensions cannot run simultaneously.
+> **⚠️ Important:** If you have the original AWBW Enhancements extension installed, you must **disable or remove it first** to avoid conflicts.
 
-1. **Download the code:** Clone this repository or download it as a ZIP file and extract it to a folder on your computer.
-2. **Open Extensions page:**
-    - **Chrome:** Go to `chrome://extensions`
-    - **Edge:** Go to `edge://extensions`
-3. **Enable Developer Mode:** Toggle the "Developer mode" switch (usually in the top right corner).
-4. **Disable the original extension (if installed):** Find "AWBW Enhancements" or "AWBW Helper" in your extensions list and toggle it off or click "Remove".
-5. **Load Unpacked:** Click the "Load unpacked" button that appears.
-6. **Select Folder:** Navigate to and select the folder containing the `manifest.json` file (the root folder of this repository).
+### Chrome / Edge / Brave (Chromium)
+
+1. **Download the code:** Clone this repository or download it as a ZIP file and extract it.
+2. **Open Extensions page:** Go to `chrome://extensions` (or `edge://extensions`).
+3. **Enable Developer Mode:** Toggle the "Developer mode" switch.
+4. **Load Unpacked:** Click "Load unpacked".
+5. **Select Folder:** Select the folder containing `manifest.json`.
+
+### Firefox
+
+1. **Download the code:** Clone this repository or download it as a ZIP file and extract it.
+2. **Prepare Manifest:**
+   - Delete or rename the existing `manifest.json` (this is the Chrome version).
+   - Rename `manifest_firefox.json` to `manifest.json`.
+3. **Open Debugging page:** Go to `about:debugging`.
+4. **Load Add-on:** Click "This Firefox", then "Load Temporary Add-on...".
+5. **Select Manifest:** Select the `manifest.json` file you just renamed.
 
 The extension should now be installed and active.
 
