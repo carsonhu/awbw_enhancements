@@ -10,13 +10,16 @@ The original extension can be installed for Chrome and Microsoft Edge (and other
 
 To use this fork, you'll need to load it as an unpacked extension in your browser (Chrome/Edge/Brave/etc):
 
+> **⚠️ Important:** If you have the original AWBW Enhancements extension installed from the Chrome Web Store or Firefox Add-ons, you must **disable or remove it first** to avoid conflicts. Both extensions cannot run simultaneously.
+
 1. **Download the code:** Clone this repository or download it as a ZIP file and extract it to a folder on your computer.
 2. **Open Extensions page:**
     - **Chrome:** Go to `chrome://extensions`
     - **Edge:** Go to `edge://extensions`
 3. **Enable Developer Mode:** Toggle the "Developer mode" switch (usually in the top right corner).
-4. **Load Unpacked:** Click the "Load unpacked" button that appears.
-5. **Select Folder:** Navigate to and select the folder containing the `manifest.json` file (the root folder of this repository).
+4. **Disable the original extension (if installed):** Find "AWBW Enhancements" or "AWBW Helper" in your extensions list and toggle it off or click "Remove".
+5. **Load Unpacked:** Click the "Load unpacked" button that appears.
+6. **Select Folder:** Navigate to and select the folder containing the `manifest.json` file (the root folder of this repository).
 
 The extension should now be installed and active.
 
