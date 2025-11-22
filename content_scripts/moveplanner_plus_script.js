@@ -387,13 +387,24 @@ function initializeQuickActions(options) {
         hoveredEntity = null;
     });
 
+    let mouseX = 0;
+    let mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
     document.addEventListener('keyup', (e) => {
         let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
         if (quickMoveKeys.includes(e.keyCode)) {
             let duration = Date.now() - quickMoveStartTime;
             if (duration > 150) {
                 // Drag-and-drop behavior: if held for > 150ms, confirm move on release
-                handleQuickAction(() => clickMoveOption(), 0);
+                // Use elementFromPoint to handle clicks even on corners/overlays where hoveredEntity might be null
+                let target = document.elementFromPoint(mouseX, mouseY);
+                if (target) {
+                    target.click();
+                }
             }
             quickMoveStartTime = 0;
         }
