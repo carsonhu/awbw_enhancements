@@ -288,7 +288,12 @@ function templateKeyboardOption(mapping) {
 function initializeKeyboardOptions() {
     let keybindListener = new KeybindListener("keybinding-modal");
     for (let optionMapping of kKeyboardOptionsMapping) {
-        let container = document.getElementById(optionMapping.id + "-container");
+        let containerId = optionMapping.id + "-container";
+        let container = document.getElementById(containerId);
+        if (!container) {
+            console.error("Missing container for:", optionMapping.id);
+            continue;
+        }
         container.innerHTML = DOMPurify.sanitize(templateKeyboardOption(optionMapping));
 
         let maxBindings = optionMapping.image ? 1 : kMaxKeyboardBindings;
