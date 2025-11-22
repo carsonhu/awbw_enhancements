@@ -7,11 +7,11 @@
 }
 
 .awbwenhancements-bm-player-banner {
-  background: linear-gradient(to right, rgb(148, 162, 253), rgb(70,110,254));
+  background: linear-gradient(to right, rgb(148, 162, 253), rgb(70, 110, 254));
 }
 
 .awbwenhancements-bm-player-border {
-  border-color: rgb(70,110,254);
+  border-color: rgb(70, 110, 254);
 }
 
 .awbwenhancements-ge-player-banner {
@@ -160,42 +160,43 @@
 }
 
 .awbwenhancements-btn {
-    display: flex;
-    height: 20px;
-    width: 100px;
+  display: flex;
+  height: 20px;
+  width: 100px;
 
-    align-items: center;
-    background: #FFFFFF;
-    border: 1px solid rgb(161, 161, 161);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: bold;
-    justify-content: center;
-    padding: 2px 4px;
-    margin-left: 8px;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid rgb(161, 161, 161);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  justify-content: center;
+  padding: 2px 4px;
+  margin-left: 8px;
 }
+
 .awbwenhancements-btn:hover {
-    filter: brightness(90%);
+  filter: brightness(90%);
 }
 
 .awbwenhancements-select {
-    flex-grow: 1;
-    display: flex;
-    height: 26px;
-    width: 100px;
-    margin-left: 8px;
-    padding: 2px 4px;
-    margin-right: 4px;
+  flex-grow: 1;
+  display: flex;
+  height: 26px;
+  width: 100px;
+  margin-left: 8px;
+  padding: 2px 4px;
+  margin-right: 4px;
 }
 
 .awbwenhancements-numeric-input {
-    border-style: solid;
-    border-width: 1px;
-    border-color: #000000;
-    background-color: #0066CC;
-    color: #FFFFE0;
-    font-size: 14px;
-    font-family: Arial,Verdana,Helvetica,Geneva,sans-serif;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #000000;
+  background-color: #0066CC;
+  color: #FFFFE0;
+  font-size: 14px;
+  font-family: Arial, Verdana, Helvetica, Geneva, sans-serif;
 }
 
 .awbwenhancements-btn-container {
@@ -206,89 +207,227 @@
 
 /* the outer container exists to participate in flexbox layout with the right dimensions */
 .awbwenhancements-sidebar-outer-container {
-    height: 896px;
-    width: 210px;
+  height: 896px;
+  width: 210px;
 }
 
 /* the inner container uses position absolute and a fixed width that is larger than the expected
  * content size so that we get a y scrollbar without an x scrollbar.
  */
 .awbwenhancements-sidebar-inner-container {
-    position: absolute;
-    height: 896px;
-    width: 360px;
-    overflow-y: auto;
+  position: absolute;
+  height: 896px;
+  width: 360px;
+  overflow-y: auto;
 }
 
 /* the contents wrapper then actually contains the content */
 .awbwenhancements-sidebar-contents {
-    width: fit-content;
+  width: fit-content;
 }
 
 .awbwenhancements-sidebar-entry {
-    margin-left: 10px;
-    margin-bottom: 5px;
+  margin-left: 10px;
+  margin-bottom: 5px;
 }
 
 .awbwenhancements-player-entry {
-    display: flex;
-    height: 100%;
-    align-items: self-start;
-    flex-direction: column;
+  display: flex;
+  height: 100%;
+  align-items: self-start;
+  flex-direction: column;
 }
 
 .awbwenhancements-player-banner {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
+
 .awbwenhancements-player-status {
   width: 214px;
 }
-.awbwenhancements-player-controls {
-}
-.awbwenhancements-player-bar {
-}
+
+.awbwenhancements-player-controls {}
+
+.awbwenhancements-player-bar {}
 
 .awbwenhancements-co-menu-container {
-    position: relative;
-    display: block;
-    width: 144px;
-    /* need to be above the removed units panel */
-    z-index: 105;
+  position: relative;
+  display: block;
+  width: 144px;
+  /* need to be above the removed units panel */
+  z-index: 105;
 }
+
 .awbwenhancements-co-menu {
-    position: absolute;
-    display: block;
-    width: 144px;
-    /* need to be above the removed units panel */
-    z-index: 105;
+  position: absolute;
+  display: block;
+  width: 144px;
+  /* need to be above the removed units panel */
+  z-index: 105;
 }
 
 .awbwenhancements-player-funds-container {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .awbwenhancements-player-funds-container:hover .hover-text {
-    visibility: visible;
+  visibility: visible;
 }
 
 .awbwenhancements-player-funds-display {
-    position: absolute;
-    right: -40px;
-    top: 100%;
-    transform-origin: top left;
-    width: 160px;
+  position: absolute;
+  right: -40px;
+  top: 100%;
+  transform-origin: top left;
+  width: 160px;
 }
 
 .awbwenhancements-range-tile {
-    border-style: solid;
-    border-width: 1px;
-    pointer-events: none;
+  border-style: solid;
+  border-width: 1px;
+  pointer-events: none;
 }
 
 td.awbwenhancements-two-hit-ko {
-    border-style: solid !important;
-    border-width: 2px !important;
-    border-color: blue !important;
+  border-style: solid !important;
+  border-width: 2px !important;
+  border-color: blue !important;
+}
+
+.awbwenhancements-hotkey-btn {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 4px 8px;
+  background: #f0f0f0;
+  border: 1px solid #999;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  vertical-align: middle;
+}
+
+.awbwenhancements-hotkey-btn:hover {
+  background: #e0e0e0;
+  border-color: #666;
+}
+
+
+.awbwenhancements-hotkey-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  z-index: 10000;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.awbwenhancements-hotkey-modal h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #555;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.awbwenhancements-hotkey-entry {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  padding: 3px 0;
+  border-bottom: 1px solid #444;
+}
+
+.awbwenhancements-hotkey-label {
+  font-weight: bold;
+}
+
+.awbwenhancements-hotkey-key {
+  font-family: monospace;
+  background: #444;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.awbwenhancements-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #aaa;
+}
+
+.awbwenhancements-close-btn:hover {
+  color: white;
+}
+
+.awbwenhancements-hotkey-header {
+  font-weight: bold;
+  color: #aaa;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 2px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.awbwenhancements-hotkey-unit-entry {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px;
+  width: 40px;
+}
+
+.awbwenhancements-hotkey-unit-image {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 2px;
+  image-rendering: pixelated;
+}
+
+.awbwenhancements-hotkey-section {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.awbwenhancements-hotkey-key.editable {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.awbwenhancements-hotkey-key.editable:hover {
+  background: #666;
+}
+
+.awbwenhancements-hotkey-key.editing {
+  background: #d9534f;
+  color: white;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }

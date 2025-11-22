@@ -22,6 +22,7 @@ This fork adds comprehensive keyboard shortcuts for common move planner actions:
 - **Quick Capture (F)** - Capture with Infantry/Mech
 - **Quick Wait (S)** - Wait a unit
 - **Quick Unwait (X)** - Unwait a unit
+- **Set HP (1-0)** - Set unit HP (1-9 for 1-9 HP, 0 for 10 HP)
 - **End Turn (M)** - End your turn
 
 #### Quick Build Hotkeys

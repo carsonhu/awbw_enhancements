@@ -196,14 +196,6 @@ let kRangeOptionsMapping = [
 
 let kKeyboardOptionsMapping = [
     {
-        id: "toggle-calculator",
-        name: "options_bindings_toggle_calculator",
-        default: [67 /*c*/],
-        label: "Toggle Calculator",
-        description: [
-            `Keyboard shortcut for toggling the Damage Calculator. Also works on the game page.`,
-        ],
-    }, {
         id: "hold-quick-move-range-preview",
         name: "options_bindings_hold_quick_move_range_preview",
         default: [16 /*shift*/],
@@ -231,7 +223,7 @@ let kKeyboardOptionsMapping = [
         id: "quick-convert-army-hotkey",
         name: "options_bindings_quick_convert_army_hotkey",
         default: [86 /*v*/],
-        label: "Quick Convert (Army)",
+        label: "Quick Convert Property (Army)",
         description: [
             `Keyboard shortcut to convert a building to your army's color (when an infantry is on it).`,
         ],
@@ -239,7 +231,7 @@ let kKeyboardOptionsMapping = [
         id: "quick-convert-neutral-hotkey",
         name: "options_bindings_quick_convert_neutral_hotkey",
         default: [78 /*n*/],
-        label: "Quick Convert (Neutral)",
+        label: "Quick Convert Property (Neutral)",
         description: [
             `Keyboard shortcut to convert a building to neutral (when an infantry is on it).`,
         ],

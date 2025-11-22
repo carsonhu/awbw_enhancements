@@ -790,13 +790,308 @@ OptionsReader.instance().onOptionsReady((options) => {
                             child.removeAttribute("id");
                         }
                     }
-                })).observe(removedUnitsPanel, { subtree: true, childList: true });
+                })).observe(removedUnitsPanel, { childList: true });
             }
         }
 
+        initializeHotkeyReference(options);
         // Grab initial state to initialize stuff
         parser.handleMapUpdate();
 
         playersPanel.startFirstTurn();
     });
 });
+
+function initializeHotkeyReference(options) {
+    // Find a place to inject the button. The game controls table seems appropriate.
+    let controlsTable = document.getElementById("game-controls-table");
+    if (!controlsTable) return;
+
+    // Create the button
+    let hotkeyBtn = document.createElement("div");
+    hotkeyBtn.className = "awbwenhancements-hotkey-btn";
+    hotkeyBtn.innerHTML = '<i class="fas fa-wrench"></i> Hotkeys';
+    hotkeyBtn.title = "View Keyboard Shortcuts";
+
+    // Find a place to inject the button.
+    // User wants it to the right of the "Your Games" select box.
+    let gameSelect = document.getElementById("your_games");
+    if (gameSelect && gameSelect.parentNode) {
+        let container = gameSelect.parentNode;
+        // The container (td) has a fixed width of 220px which matches the select.
+        // We need to increase it or set to auto to fit the button.
+        container.style.width = "auto";
+        container.appendChild(hotkeyBtn);
+    } else {
+        // Fallback: Inject it into the controls area (e.g., near the snapshot buttons)
+        let controlsTable = document.getElementById("game-controls-table");
+        if (controlsTable) {
+            let buttonContainer = controlsTable.querySelector("td");
+            if (buttonContainer) {
+                buttonContainer.appendChild(hotkeyBtn);
+            }
+        }
+    }
+
+    // Create the modal
+    let modal = document.createElement("div");
+    modal.className = "awbwenhancements-hotkey-modal";
+    modal.innerHTML = `
+        <div class="awbwenhancements-close-btn">X (Esc)</div>
+        <h3>Keyboard Shortcuts</h3>
+        <div class="awbwenhancements-hotkey-content"></div>
+    `;
+    document.body.appendChild(modal);
+
+    // Populate content
+    let contentDiv = modal.querySelector(".awbwenhancements-hotkey-content");
+
+    const hotkeySections = [
+        {
+            title: "General Actions",
+            items: [
+                { label: "Quick Move", option: "options_bindings_quick_move_hotkey", default: "B" },
+                { label: "Quick Capture", option: "options_bindings_quick_capture_hotkey", default: "F" },
+                { label: "Quick Wait", option: "options_bindings_quick_wait_hotkey", default: "S" },
+                { label: "Quick Unwait", option: "options_bindings_quick_unwait_hotkey", default: "X" },
+                { label: "Quick Remove", option: "options_bindings_quick_remove_unit_hotkey", default: "G" },
+                { label: "Convert Property (Army)", option: "options_bindings_quick_convert_army_hotkey", default: "V" },
+                { label: "Convert Property (Neutral)", option: "options_bindings_quick_convert_neutral_hotkey", default: "N" },
+                { label: "End Turn", option: "options_bindings_end_turn_hotkey", default: "M" },
+                { label: "Toggle Calculator", option: null, default: "C" },
+                { label: "Set HP", option: null, default: "0-9" },
+            ]
+        },
+        {
+            title: "Base Units",
+            type: "units",
+            items: [
+                { image: "osinfantry.gif", option: "options_bindings_quick_build_infantry_hotkey", default: "Q" },
+                { image: "osmech.gif", option: "options_bindings_quick_build_mech_hotkey", default: "" },
+                { image: "osrecon.gif", option: "options_bindings_quick_build_recon_hotkey", default: "W" },
+                { image: "osapc.gif", option: "options_bindings_quick_build_apc_hotkey", default: "" },
+                { image: "osartillery.gif", option: "options_bindings_quick_build_artillery_hotkey", default: "E" },
+                { image: "ostank.gif", option: "options_bindings_quick_build_tank_hotkey", default: "R" },
+                { image: "osanti-air.gif", option: "options_bindings_quick_build_anti_air_hotkey", default: "T" },
+                { image: "osmissile.gif", option: "options_bindings_quick_build_missile_hotkey", default: "" },
+                { image: "osrocket.gif", option: "options_bindings_quick_build_rocket_hotkey", default: "" },
+                { image: "osmd.tank.gif", option: "options_bindings_quick_build_md_tank_hotkey", default: "" },
+                { image: "ospiperunner.gif", option: "options_bindings_quick_build_piperunner_hotkey", default: "" },
+                { image: "osneotank.gif", option: "options_bindings_quick_build_neotank_hotkey", default: "" },
+                { image: "osmegatank.gif", option: "options_bindings_quick_build_megatank_hotkey", default: "" },
+            ]
+        },
+        {
+            title: "Airport Units",
+            type: "units",
+            items: [
+                { image: "ost-copter.gif", option: "options_bindings_quick_build_t_copter_hotkey", default: "Q" },
+                { image: "osb-copter.gif", option: "options_bindings_quick_build_b_copter_hotkey", default: "W" },
+                { image: "osfighter.gif", option: "options_bindings_quick_build_fighter_hotkey", default: "E" },
+                { image: "osbomber.gif", option: "options_bindings_quick_build_bomber_hotkey", default: "R" },
+                { image: "osstealth.gif", option: "options_bindings_quick_build_stealth_hotkey", default: "" },
+                { image: "osblackbomb.gif", option: "options_bindings_quick_build_black_bomb_hotkey", default: "" },
+            ]
+        },
+        {
+            title: "Port Units",
+            type: "units",
+            items: [
+                { image: "osblackboat.gif", option: "options_bindings_quick_build_black_boat_hotkey", default: "T" },
+                { image: "oslander.gif", option: "options_bindings_quick_build_lander_hotkey", default: "Q" },
+                { image: "oscruiser.gif", option: "options_bindings_quick_build_cruiser_hotkey", default: "W" },
+                { image: "ossub.gif", option: "options_bindings_quick_build_sub_hotkey", default: "R" },
+                { image: "osbattleship.gif", option: "options_bindings_quick_build_battleship_hotkey", default: "E" },
+                { image: "oscarrier.gif", option: "options_bindings_quick_build_carrier_hotkey", default: "" },
+            ]
+        }
+    ];
+
+    let uiRefs = {};
+
+    hotkeySections.forEach(section => {
+        // Header
+        let header = document.createElement("div");
+        header.className = "awbwenhancements-hotkey-header";
+        header.innerText = section.title;
+        contentDiv.appendChild(header);
+
+        let container = document.createElement("div");
+        let itemsContainer = document.createElement("div");
+        if (section.type === "units") {
+            itemsContainer.className = "awbwenhancements-hotkey-section";
+        }
+        contentDiv.appendChild(itemsContainer);
+
+        section.items.forEach(item => {
+            let keys = item.default;
+            if (item.option && options[item.option]) {
+                // Map key codes to names if possible, or use raw codes
+                keys = options[item.option].map(code => {
+                    return String.fromCharCode(code);
+                }).join(" / ");
+            }
+            if (keys === "") keys = "-";
+
+            let entry = document.createElement("div");
+
+            if (section.type === "units") {
+                entry.className = "awbwenhancements-hotkey-unit-entry";
+                entry.innerHTML = `
+                    <img src="https://awbw.amarriner.com/terrain/aw2/${item.image}" class="awbwenhancements-hotkey-unit-image" title="${item.label || ''}">
+                    <span class="awbwenhancements-hotkey-key editable" data-option="${item.option}" data-default="${item.default}">${keys}</span>
+                `;
+            } else {
+                entry.className = "awbwenhancements-hotkey-entry";
+                entry.innerHTML = `
+                    <span class="awbwenhancements-hotkey-label">${item.label}</span>
+                    <span class="awbwenhancements-hotkey-key editable" data-option="${item.option}" data-default="${item.default}">${keys}</span>
+                `;
+            }
+
+            itemsContainer.appendChild(entry);
+
+            // Store reference for easier updates
+            if (item.option) {
+                let keySpan = entry.querySelector(".awbwenhancements-hotkey-key");
+                uiRefs[item.option] = keySpan;
+
+                keySpan.title = "Click to edit";
+                keySpan.addEventListener("click", (e) => {
+                    e.stopPropagation();
+
+                    // Reset any other editing keys
+                    document.querySelectorAll(".editing").forEach(el => {
+                        el.classList.remove("editing");
+                        el.innerText = el.dataset.originalText;
+                    });
+
+                    keySpan.dataset.originalText = keySpan.innerText;
+                    keySpan.innerText = "Press key...";
+                    keySpan.classList.add("editing");
+
+                    const handleKeyDown = (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        let newCode = event.keyCode;
+                        let newKeys = [];
+
+                        // Prevent assigning 'C' (Calculator)
+                        if (newCode === 67) {
+                            alert("The 'C' key is reserved for the Calculator.");
+                            keySpan.innerText = keySpan.dataset.originalText;
+                            keySpan.classList.remove("editing");
+                            document.removeEventListener("keydown", handleKeyDown, true);
+                            document.removeEventListener("click", handleClickOutside, true);
+                            return;
+                        }
+
+                        // Backspace or Delete to clear
+                        if (newCode === 8 || newCode === 46) {
+                            newKeys = [];
+                        } else {
+                            newKeys = [newCode];
+                        }
+
+                        // --- Conflict Resolution ---
+                        if (newKeys.length > 0) {
+                            hotkeySections.forEach(checkSection => {
+                                checkSection.items.forEach(checkItem => {
+                                    // Skip self and non-options
+                                    if (checkItem.option === item.option || !checkItem.option) return;
+
+                                    let isConflict = false;
+                                    // 1. General Actions conflict with everything
+                                    if (section.title === "General Actions") isConflict = true;
+                                    // 2. Everything conflicts with General Actions
+                                    else if (checkSection.title === "General Actions") isConflict = true;
+                                    // 3. Units conflict with units in the same facility
+                                    else if (section.title === checkSection.title) isConflict = true;
+
+                                    if (isConflict) {
+                                        let otherKeys = options[checkItem.option] || [];
+                                        if (otherKeys.includes(newCode)) {
+                                            // Remove the conflicting key
+                                            let filteredKeys = otherKeys.filter(k => k !== newCode);
+                                            options[checkItem.option] = filteredKeys;
+
+                                            // Save and Update UI for the conflict
+                                            let saveObj = {};
+                                            saveObj[checkItem.option] = filteredKeys;
+                                            chrome.storage.sync.set(saveObj);
+
+                                            if (uiRefs[checkItem.option]) {
+                                                let displayKeys = filteredKeys.map(code => String.fromCharCode(code)).join("/");
+                                                if (displayKeys === "") displayKeys = "-";
+                                                uiRefs[checkItem.option].innerText = displayKeys;
+                                            }
+                                        }
+                                    }
+                                });
+                            });
+                        }
+
+                        // Update options object locally
+                        options[item.option] = newKeys;
+
+                        // Save to storage
+                        let saveObj = {};
+                        saveObj[item.option] = newKeys;
+                        chrome.storage.sync.set(saveObj, () => {
+                            console.log("Saved hotkey:", item.label, newKeys);
+                        });
+
+                        // Update UI
+                        let displayKeys = newKeys.map(code => String.fromCharCode(code)).join("/");
+                        if (displayKeys === "") displayKeys = "-";
+                        keySpan.innerText = displayKeys;
+                        keySpan.classList.remove("editing");
+
+                        // Remove listener
+                        document.removeEventListener("keydown", handleKeyDown, true);
+                        document.removeEventListener("click", handleClickOutside, true);
+                    };
+
+                    const handleClickOutside = (event) => {
+                        if (event.target !== keySpan) {
+                            keySpan.innerText = keySpan.dataset.originalText;
+                            keySpan.classList.remove("editing");
+                            document.removeEventListener("keydown", handleKeyDown, true);
+                            document.removeEventListener("click", handleClickOutside, true);
+                        }
+                    };
+
+                    document.addEventListener("keydown", handleKeyDown, true);
+                    // Delay click listener slightly to avoid immediate trigger
+                    setTimeout(() => {
+                        document.addEventListener("click", handleClickOutside, true);
+                    }, 50);
+                });
+            }
+        });
+    });
+
+    // Event listeners
+    hotkeyBtn.addEventListener("click", () => {
+        modal.style.display = "block";
+    });
+
+    modal.querySelector(".awbwenhancements-close-btn").addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    // Close on click outside
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // Close on Esc
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.style.display === "block") {
+            modal.style.display = "none";
+        }
+    });
+}

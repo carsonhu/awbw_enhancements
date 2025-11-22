@@ -20,7 +20,6 @@
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
-                "content_scripts/toggle_calculator_shortcut_script.js",
                 "content_scripts/rate_limit_workaround_script.js",
                 "content_scripts/speedy_event_panel_script.js"
             ]
@@ -61,7 +60,6 @@
                 "lib/players_panel.js",
                 "lib/savestate_interceptor.js",
                 "lib/savestate_manager.js",
-                "content_scripts/toggle_calculator_shortcut_script.js",
                 "content_scripts/moveplanner_plus_script.js"
             ]
         }
