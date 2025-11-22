@@ -60,9 +60,9 @@ Hotkeys to instantly build a unit when hovering over a Base, Airport, or Port. B
 - ![Sub](https://awbw.amarriner.com/terrain/aw2/ossub.gif) **Sub (R)**
 - ![Battleship](https://awbw.amarriner.com/terrain/aw2/osbattleship.gif) **Battleship (T)**
 
-**Additional units** (Mech, Md. Tank, Neotank, APC, etc) can have custom hotkeys assigned in the extension options.
+**Additional units** (Mech, Md. Tank, Neotank, APC, etc) can have custom hotkeys assigned in the move planner.
 
-All hotkeys are fully customizable in the extension options. A "Disable All Quick Action Hotkeys" button is available in case you only want the bug fixes and CO portrait / army color fixes.
+All hotkeys are fully customizable in the move planner. A "Disable All Quick Action Hotkeys" button is available in case you only want the bug fixes and CO portrait / army color fixes.
 
 ### Weather Toggle
 This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow.
@@ -93,7 +93,7 @@ The original extension includes:
 ## Screenshots
 
 Here's an example of what the moveplanner looks like with AWBW Enhancements enabled:
-![screenshot of moveplanner plus](docs/images/demo_screenshot_2.png)
+![screenshot of moveplanner plus](docs/images/demo_new.png)
 
 ## Credits
 
