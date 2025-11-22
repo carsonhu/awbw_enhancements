@@ -25,3 +25,10 @@ ff:
 	chmod +w manifest.json || true
 	./merge_json.py manifests/manifest_common.json manifests/manifest_ff.json > manifest.json
 	chmod -w manifest.json
+
+run-ff: ff
+	npx web-ext run
+
+pack-ff: ff
+	mkdir -p $(OUTPUT_DIR)
+	zip -r $(OUTPUT_DIR)/awbw_enhancements_ff.zip $(SRCS)

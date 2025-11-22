@@ -32,6 +32,18 @@ To use this fork, you'll need to load it as an unpacked extension.
 
 The extension should now be installed and active.
 
+### Development (Firefox)
+
+To avoid reinstalling the temporary extension every time you restart Firefox, you can use the `run-ff` command. This uses `web-ext` to launch a dedicated Firefox instance with the extension installed.
+
+1.  Ensure you have **Node.js** and **npm** installed.
+2.  Run:
+    ```powershell
+    ./manage.ps1 run-ff
+    ```
+
+
+
 ## Features Added in This Fork
 
 ### Quick Action Hotkeys
