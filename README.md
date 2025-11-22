@@ -1,6 +1,6 @@
 # AWBW Enhancements (Fork)
 
-> **Note:** This is a fork of the original [AWBW Enhancements](https://github.com/saltorsauce/awbw_enhancements) by [saltorsauce](https://github.com/saltorsauce). All credit for the original extension goes to the original author.
+> **Note:** This is a fork of the original [AWBW Enhancements](https://github.com/kbuzsaki/awbw_enhancements) by [kbuzsaki](https://github.com/kbuzsaki). All credit for the original extension goes to the original author.
 
 "AWBW Enhancements" is a browser extension that adds extra functionality to [Advance Wars By Web](https://awbw.amarriner.com).
 
@@ -87,7 +87,6 @@ Here's an example of what the moveplanner looks like with AWBW Enhancements enab
 
 ## Credits
 
-- **Original Author:** [saltorsauce](https://github.com/saltorsauce) (saltor#4306 on AWBW Discord)
-- **Fork Maintainer:** This fork adds quick action hotkeys, weather toggle, and additional bug fixes
+- **Original Author:** [kbuzsaki](https://github.com/kbuzsaki) (saltor#4306 on AWBW Discord)
 
 Please feel free to report bugs or request new features via a GitHub issue.
