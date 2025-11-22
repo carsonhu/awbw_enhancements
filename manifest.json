@@ -1,7 +1,7 @@
 ﻿{
     "name": "AWBW Enhancements Plus",
     "description": "Replay keyboard shortcuts and moveplanner enhancements for Advance Wars By Web.",
-    "version": "2024.5.22.0",
+    "version": "2025.5.22.0",
     "icons": {
         "16": "/res/images/fighter_icon16.png",
         "32": "/res/images/fighter_icon32.png",
@@ -64,26 +64,28 @@
             ]
         }
     ],
-    "manifest_version": 2,
+    "manifest_version": 3,
     "permissions": [
         "storage",
-        "downloads",
-        "https://awbw.amarriner.com/*"
+        "downloads"
     ],
     "background": {
-        "scripts": [
-            "background/service_worker.js"
-        ]
+        "service_worker": "background/service_worker.js"
     },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "{8a19e478-4d8f-4375-b3dc-1102abcfd2c8}"
-        }
-    },
+    "host_permissions": [
+        "https://awbw.amarriner.com/*"
+    ],
     "web_accessible_resources": [
-        "/res/axios_throttler.js",
-        "/res/playersinfo_patcher.js",
-        "/res/savestate_injector.js",
-        "/res/unitsinfo_patcher.js"
+        {
+            "matches": [
+                "https://awbw.amarriner.com/*"
+            ],
+            "resources": [
+                "/res/axios_throttler.js",
+                "/res/playersinfo_patcher.js",
+                "/res/savestate_injector.js",
+                "/res/unitsinfo_patcher.js"
+            ]
+        }
     ]
 }
