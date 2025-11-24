@@ -615,57 +615,70 @@ function clickMoveOption() {
     }
 }
 
-function clickRemoveOption() {
-    // Use querySelector to target the list item specifically, avoiding the img with the same ID
-    let removeOption = document.querySelector("li#remove");
-    if (removeOption) {
-        removeOption.click();
+function pollAndClick(selector) {
+    let attempts = 0;
+    const maxAttempts = 50; // 50 * 10ms = 500ms max wait
+
+    function attempt() {
+        let element = document.querySelector(selector);
+        if (element && element.offsetParent !== null) {
+            element.click();
+            return;
+        }
+
+        attempts++;
+        if (attempts < maxAttempts) {
+            setTimeout(attempt, 10);
+        }
     }
+    attempt();
+}
+
+function clickRemoveOption() {
+    pollAndClick("li#remove");
 }
 
 function clickCaptureOption() {
-    let captureOption = document.getElementById("capture");
-    if (captureOption) {
-        captureOption.click();
-    }
+    pollAndClick("#capture");
 }
 
 function clickWaitOption() {
-    let waitOption = document.getElementById("wait");
-    if (waitOption) {
-        waitOption.click();
-    }
+    pollAndClick("#wait");
 }
 
 function clickUnwaitOption() {
-    let unwaitOption = document.getElementById("unwait");
-    if (unwaitOption) {
-        unwaitOption.click();
-    }
+    pollAndClick("#unwait");
 }
 
 function clickBuildOption(unitNames) {
     // unitNames is an array of strings, e.g. ["Infantry", "T-Copter", "Black Boat"]
     // We click the first one that appears in the menu.
-    let buildMenu = document.getElementById("build-menu");
-    if (buildMenu) {
-        // Ensure the menu is actually visible before clicking anything
-        if (buildMenu.style.display === "none" || buildMenu.offsetParent === null) {
-            return;
-        }
 
-        let unitsList = buildMenu.querySelector("ul#units");
-        if (unitsList) {
-            let items = unitsList.querySelectorAll("li");
-            for (let item of items) {
-                let itemText = item.textContent.trim();
-                if (unitNames.includes(itemText)) {
-                    item.click();
-                    return;
+    let attempts = 0;
+    const maxAttempts = 50; // 50 * 10ms = 500ms max wait
+
+    function attempt() {
+        let buildMenu = document.getElementById("build-menu");
+        if (buildMenu && buildMenu.style.display !== "none" && buildMenu.offsetParent !== null) {
+            let unitsList = buildMenu.querySelector("ul#units");
+            if (unitsList) {
+                let items = unitsList.querySelectorAll("li");
+                for (let item of items) {
+                    let itemText = item.textContent.trim();
+                    if (unitNames.includes(itemText)) {
+                        item.click();
+                        return;
+                    }
                 }
             }
         }
+
+        attempts++;
+        if (attempts < maxAttempts) {
+            setTimeout(attempt, 10);
+        }
     }
+    attempt();
 }
 
 
