@@ -435,8 +435,9 @@ td.awbwenhancements-two-hit-ko {
 /* Tree Visualizer Styles */
 #planner-tree-container {
   width: 100%;
-  height: 200px;
+  height: 60px;
   /* Fixed height */
+  resize: vertical;
   overflow: auto;
   /* Scrollable in both directions */
   background: #f0f0f0;
@@ -536,4 +537,10 @@ td.awbwenhancements-two-hit-ko {
 
 .country-neutral {
   fill: #ffffff;
+}
+
+/* Text contrast for dark backgrounds */
+.country-ne+text,
+.country-ci+text {
+  fill: white;
 }
