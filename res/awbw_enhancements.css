@@ -431,3 +431,109 @@ td.awbwenhancements-two-hit-ko {
     opacity: 1;
   }
 }
+
+/* Tree Visualizer Styles */
+#planner-tree-container {
+  width: 100%;
+  height: 200px;
+  /* Fixed height */
+  overflow: auto;
+  /* Scrollable in both directions */
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.tree-node-circle {
+  transition: all 0.2s;
+}
+
+.tree-node-circle:hover {
+  r: 18;
+  stroke-width: 2;
+}
+
+/* Country Colors for Tree Nodes */
+.country-os {
+  fill: rgb(255, 79, 78);
+}
+
+.country-bm {
+  fill: rgb(148, 162, 253);
+}
+
+.country-ge {
+  fill: rgb(135, 226, 135);
+}
+
+.country-yc {
+  fill: rgb(240, 210, 4);
+}
+
+.country-bh {
+  fill: rgb(187, 180, 165);
+}
+
+.country-rf {
+  fill: rgb(194, 113, 132);
+}
+
+.country-gs {
+  fill: rgb(151, 151, 151);
+}
+
+.country-bd {
+  fill: rgb(173, 126, 95);
+}
+
+.country-ab {
+  fill: rgb(254, 192, 120);
+}
+
+.country-js {
+  fill: rgb(196, 215, 180);
+}
+
+.country-ci {
+  fill: rgb(35, 66, 186);
+}
+
+.country-pc {
+  fill: rgb(255, 153, 204);
+}
+
+.country-tg {
+  fill: rgb(108, 217, 208);
+}
+
+.country-pl {
+  fill: rgb(164, 71, 211);
+}
+
+.country-ar {
+  fill: rgb(122, 157, 17);
+}
+
+.country-wn {
+  fill: rgb(212, 191, 159);
+}
+
+.country-aa {
+  fill: rgb(132, 223, 232);
+}
+
+.country-ne {
+  fill: rgb(80, 80, 80);
+}
+
+.country-sc {
+  fill: rgb(180, 190, 200);
+}
+
+.country-uw {
+  fill: rgb(210, 120, 30);
+}
+
+.country-neutral {
+  fill: #ffffff;
+}

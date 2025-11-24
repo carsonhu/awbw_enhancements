@@ -79,6 +79,16 @@ let kCheckOptionsMapping = [
             `This is an escape hatch in case future AWBW updates temporarily break the snapshot feature.`,
         ],
     }, {
+        id: "enable-snapshot-tree-view",
+        name: "options_enable_snapshot_tree_view",
+        requires: ["js-requires-moveplanner-plus", "enable-savestate-interception"],
+        default: true,
+        label: "Enable Tree-Based Snapshots",
+        description: [
+            `Enables the tree-based visualization for snapshots in the move planner. ` +
+            `If disabled, the legacy list view will be used instead.`
+        ],
+    }, {
         id: "enable-bugfix-wait-mismatch",
         name: "options_enable_bugfix_wait_mismatch",
         default: true,
