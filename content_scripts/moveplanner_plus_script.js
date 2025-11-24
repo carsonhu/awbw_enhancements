@@ -798,7 +798,7 @@ OptionsReader.instance().onOptionsReady((options) => {
         // Grab initial state to initialize stuff
         parser.handleMapUpdate();
 
-        playersPanel.startFirstTurn();
+        await playersPanel.startFirstTurn();
     });
 });
 
