@@ -441,6 +441,8 @@ td.awbwenhancements-two-hit-ko {
 /* Tree Visualizer Styles */
 #planner-tree-container {
   width: 100%;
+  max-width: 600px;
+  /* Fixed maximum width */
   height: 60px;
   /* Fixed height */
   resize: vertical;
