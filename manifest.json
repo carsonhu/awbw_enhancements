@@ -64,32 +64,28 @@
             ]
         }
     ],
-    "manifest_version": 2,
+    "manifest_version": 3,
     "permissions": [
         "storage",
-        "downloads",
-        "https://awbw.amarriner.com/*"
+        "downloads"
     ],
     "background": {
-        "scripts": [
-            "background/service_worker.js"
-        ]
+        "service_worker": "background/service_worker.js"
     },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "{fb407091-b28b-4b0d-995c-0c69c516ab7f}",
-            "data_collection_permissions": {
-                "required": [
-                    "none"
-                ],
-                "optional": []
-            }
-        }
-    },
+    "host_permissions": [
+        "https://awbw.amarriner.com/*"
+    ],
     "web_accessible_resources": [
-        "/res/axios_throttler.js",
-        "/res/playersinfo_patcher.js",
-        "/res/savestate_injector.js",
-        "/res/unitsinfo_patcher.js"
+        {
+            "matches": [
+                "https://awbw.amarriner.com/*"
+            ],
+            "resources": [
+                "/res/axios_throttler.js",
+                "/res/playersinfo_patcher.js",
+                "/res/savestate_injector.js",
+                "/res/unitsinfo_patcher.js"
+            ]
+        }
     ]
 }
