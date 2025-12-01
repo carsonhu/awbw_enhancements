@@ -358,6 +358,7 @@ function injectRequestedStyles(options) {
 // --- Quick Move Hotkey Implementation ---
 
 let hoveredEntity = null;
+let menuOwner = null;
 let quickMoveStartTime = 0;
 
 function initializeQuickActions(options) {
@@ -443,13 +444,13 @@ function initializeQuickActions(options) {
         // --- Quick Convert Building ---
         let convertArmyKeys = options.options_bindings_quick_convert_army_hotkey || [86]; // Default 'V'
         if (convertArmyKeys.includes(e.keyCode)) {
-            handleQuickAction(() => convertBuilding(0), 0); // 0 = First option (Army)
+            handleQuickAction(() => convertBuilding(0), 100); // 0 = First option (Army), 100ms delay for menu to open
             return;
         }
 
         let convertNeutralKeys = options.options_bindings_quick_convert_neutral_hotkey || [78]; // Default 'N'
         if (convertNeutralKeys.includes(e.keyCode)) {
-            handleQuickAction(() => convertBuilding(1), 0); // 1 = Second option (Neutral)
+            handleQuickAction(() => convertBuilding(1), 100); // 1 = Second option (Neutral), 100ms delay for menu to open
             return;
         }
 
@@ -543,27 +544,78 @@ function initializeQuickActions(options) {
     });
 }
 
-function handleQuickAction(actionCallback, delay = 0) {
+function closeMenus() {
     let optionsMenu = document.getElementById("options-menu");
     let buildMenu = document.getElementById("build-menu");
 
-    let menuVisible = (optionsMenu && optionsMenu.style.display !== "none" && optionsMenu.style.display !== "") ||
-        (buildMenu && buildMenu.style.display !== "none" && buildMenu.style.display !== "");
+    if (optionsMenu) {
+        optionsMenu.style.display = "none";
+    }
+    if (buildMenu) {
+        buildMenu.style.display = "none";
+    }
+
+    menuOwner = null;
+}
+
+function handleQuickAction(actionCallback, delay = 0) {
+    // Capture the current hovered entity immediately to prevent race conditions
+    let targetEntity = hoveredEntity;
+
+    let optionsMenu = document.getElementById("options-menu");
+    let buildMenu = document.getElementById("build-menu");
+
+    let menuVisible = (optionsMenu && optionsMenu.offsetParent !== null) ||
+        (buildMenu && buildMenu.offsetParent !== null);
+
+    console.log("[AWBW Debug] handleQuickAction called:");
+    console.log("  hoveredEntity:", hoveredEntity);
+    console.log("  hoveredEntity.id:", hoveredEntity?.id);
+    console.log("  targetEntity:", targetEntity);
+    console.log("  targetEntity.id:", targetEntity?.id);
+    console.log("  menuOwner:", menuOwner);
+    console.log("  menuOwner.id:", menuOwner?.id);
+    console.log("  menuVisible:", menuVisible);
+
+    // If menu is visible but belongs to a different entity, close it
+    if (menuVisible && menuOwner !== targetEntity) {
+        console.log("[AWBW Debug] Closing stale menu (owner mismatch)");
+        closeMenus();
+        menuVisible = false;
+    }
 
     if (menuVisible) {
-        // Menu is open, perform action immediately
+        // Menu is open for the correct entity, perform action immediately
+        console.log("[AWBW Debug] Menu visible for correct entity, performing action immediately");
         actionCallback();
-    } else if (hoveredEntity) {
-        // Menu is closed, but hovering over a unit/building
-        // 1. Click the entity to open the menu
-        let clickTarget = hoveredEntity.querySelector("img") || hoveredEntity;
-        clickTarget.click();
+    } else if (targetEntity) {
+        // Menu is closed (or we just closed it), open it for the hovered entity
+        console.log("[AWBW Debug] Opening menu for targetEntity:", targetEntity.id);
 
-        // 2. Wait a brief moment for menu to appear
-        // Then perform action
-        setTimeout(actionCallback, delay);
+        // IMPORTANT: Always close any existing menus first to ensure clean state
+        closeMenus();
+
+        // Wait a moment for menus to fully close before clicking new entity
+        setTimeout(() => {
+            menuOwner = targetEntity;
+            // Click on the img inside the span (clicking span directly causes errors)
+            let clickTarget = targetEntity.querySelector("img");
+            if (!clickTarget) {
+                // Fallback to clicking the span if there's no img
+                clickTarget = targetEntity;
+            }
+
+            console.log("[AWBW Debug] Clicking on:", clickTarget);
+            console.log("[AWBW Debug] Parent span ID:", targetEntity.id);
+            clickTarget.click();
+
+            // Wait a brief moment for menu to appear, then perform action
+            setTimeout(actionCallback, delay);
+        }, 50); // 50ms delay to let menus close
     }
 }
+
+
 
 function setUnitHp(hp) {
     let hpInput = document.getElementById("hp");
@@ -588,20 +640,40 @@ function convertBuilding(optionIndex) {
     const maxAttempts = 50; // 50 * 10ms = 500ms max wait
 
     function attemptClick() {
-        let buildingOptionsList = document.getElementById("building-options");
-        if (buildingOptionsList) {
-            let options = buildingOptionsList.querySelectorAll("li");
-            if (options.length > optionIndex) {
-                // Click the image inside the list item, or the list item itself
-                let target = options[optionIndex].querySelector("img") || options[optionIndex];
-                target.click();
-                return;
+        // CRITICAL: Find the visible options-menu first, then look for building-options inside it
+        // This prevents finding building-options from old/hidden menus
+        let optionsMenu = document.getElementById("options-menu");
+
+        console.log("[AWBW Debug] convertBuilding attempt", attempts);
+        console.log("[AWBW Debug] optionsMenu:", optionsMenu);
+        console.log("[AWBW Debug] optionsMenu offsetParent:", optionsMenu?.offsetParent);
+        console.log("[AWBW Debug] optionsMenu display:", optionsMenu?.style?.display);
+
+        if (optionsMenu && optionsMenu.offsetParent !== null) {
+            // Menu is visible, now look for building-options inside THIS menu
+            let buildingOptionsList = optionsMenu.querySelector("#building-options");
+
+            console.log("[AWBW Debug] buildingOptionsList:", buildingOptionsList);
+            console.log("[AWBW Debug] buildingOptionsList offsetParent:", buildingOptionsList?.offsetParent);
+
+            if (buildingOptionsList && buildingOptionsList.offsetParent !== null) {
+                let options = buildingOptionsList.querySelectorAll("li");
+                if (options.length > optionIndex) {
+                    console.log("[AWBW Debug] convertBuilding: Found visible building options, clicking option", optionIndex);
+                    console.log("[AWBW Debug] Options found:", options.length);
+                    // Click the image inside the list item, or the list item itself
+                    let target = options[optionIndex].querySelector("img") || options[optionIndex];
+                    target.click();
+                    return;
+                }
             }
         }
 
         attempts++;
         if (attempts < maxAttempts) {
             setTimeout(attemptClick, 10);
+        } else {
+            console.log("[AWBW Debug] convertBuilding: Timed out waiting for building options");
         }
     }
 

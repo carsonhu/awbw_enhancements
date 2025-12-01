@@ -50,8 +50,8 @@ To avoid reinstalling the temporary extension every time you restart Firefox, yo
 This fork adds comprehensive keyboard shortcuts for common move planner actions:
 
 - **Quick Move (B)** - Quickly move a unit. Can also hold down B to drag and drop the unit to the new location.
-- **Quick Convert Army (V)** - Convert building to your army's color
-- **Quick Convert Neutral (N)** - Convert building to neutral
+- **Quick Convert Army (V)** - Convert building to your army's color (this can potentially be a bit buggy)
+- **Quick Convert Neutral (N)** - Convert building to neutral (this can potentially be a bit buggy)
 - **Quick Remove Unit (G)** - Remove a unit
 - **Quick Capture (F)** - Set Infantry/Mech as capturing
 - **Quick Wait (S)** - Wait a unit
@@ -91,10 +91,21 @@ All hotkeys are fully customizable in the move planner. A "Disable All Quick Act
 ### Weather Toggle
 This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow. This does not change the visuals much, but it does affect unit movement ranges.
 
+### Tree-based Save/Load Snapshot System
+This fork introduces a robust tree-based system for managing snapshots. You can now:
+- **Save Tree**: Download the entire tree of snapshots to a file.
+- **Load Tree**: Load a previously saved tree to resume analysis.
+- **Branching**: Create multiple branches of play to explore different strategies.
+
+### Automatic Unit Repair
+Units on properties that provide repairs (Cities, Bases, Ports, Airports) are now automatically repaired at the start of the turn, simulating the actual game mechanics.
+
 ### Bug Fixes
 - **Fixed CO portraits in move planner** - CO portraits were not being displayed in the move planner.
 - **Added in support for new armies** - Extension now works for newly added armies in Advance Wars by Web.
-- **Pre-deployed unit HP icons** - Fixed broken HP icon sprites appearing on pre-deployed units with full HP after savestate restore
+- **Pre-deployed unit HP icons** - Fixed broken HP icon sprites appearing on pre-deployed units with full HP after savestate restore.
+- **Ghost Production Fix** - Fixed a move planner bug where funds were deducted even if a unit wasn't built.
+- **Hachi COP/SCOP Fix** - Hachi's COP and SCOP now correctly reduce unit costs.
 
 ## Original Features
 
@@ -117,7 +128,7 @@ The original extension includes:
 ## Screenshots
 
 Here's an example of what the moveplanner looks like with AWBW Enhancements enabled:
-![screenshot of moveplanner plus](docs/images/demo_new.png)
+![screenshot of moveplanner plus](docs/images/demo_new2.png)
 
 ## Credits
 
