@@ -26,6 +26,7 @@
         "/res/multihit_calculator.css",
         "/res/multihit_calculator.js",
         "/res/multihit_engine.js",
+        "/res/moveplanner_menu_hook.js",
         "/res/playersinfo_patcher.js",
         "/res/savestate_injector.js",
         "/res/unitsinfo_patcher.js"

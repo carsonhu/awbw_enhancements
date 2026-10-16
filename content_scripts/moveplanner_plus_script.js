@@ -355,39 +355,214 @@ function injectRequestedStyles(options) {
     (document.head || document.documentElement).appendChild(s);
 }
 
-// --- Quick Move Hotkey Implementation ---
+// --- Quick actions ---
+//
+// The hotkeys drive AWBW's own menus, so they get everything AWBW does for a menu action (the undo log,
+// missile ranges, capture icons, tower counts). AWBW opens its menus and runs menu actions synchronously,
+// inside the click, so a hotkey opens the menu and picks the option in one go. The exception is building
+// conversion, whose options come from a server request (see res/moveplanner_menu_hook.js).
 
-let hoveredEntity = null;
-let menuOwner = null;
-let quickMoveStartTime = 0;
+const kUnitMenuTopOffset = -8;   // AWBW puts a unit's menu 16px right of and 8px above the unit,
+const kBuildMenuTopOffset = 0;   // and a building's build menu 16px right of it.
+const kBuildingInfoTimeoutMs = 3000;
 
-function initializeQuickActions(options) {
-    // Track hovered entity (unit or building)
-    document.addEventListener('mouseover', (e) => {
-        let target = e.target;
-        // Units are typically in spans with id starting with 'unit_'
-        let unitSpan = target.closest("span[id^='unit_']");
-        if (unitSpan) {
-            hoveredEntity = unitSpan;
+// The unit picked up with the quick move hotkey while the key is held: {unit, left, top, startTime}.
+let quickMovePickup = null;
+
+// Whether AWBW is moving a unit, which follows the cursor until the next map click drops it there.
+// AWBW keeps this to itself, so it's tracked here: choosing Move starts a move, and any map click ends it.
+let unitBeingMoved = false;
+
+function trackUnitMoves() {
+    let gamemap = document.getElementById("gamemap");
+    let menu = document.getElementById("options-menu");
+    if (!gamemap || !menu) return;
+    gamemap.addEventListener("click", (e) => {
+        if (!menu.contains(e.target)) unitBeingMoved = false;
+    }, true);
+    menu.addEventListener("click", (e) => {
+        if (e.target.id === "move") unitBeingMoved = true;
+    }, true);
+}
+
+// Drops the unit being moved under the cursor, the same as clicking there.
+function dropMovingUnit(x, y) {
+    let gamemap = document.getElementById("gamemap");
+    let element = document.elementFromPoint(x, y);
+    if (gamemap && element && gamemap.contains(element)) {
+        element.click();
+    }
+}
+
+// The unit or building under the cursor: the topmost unit or building there, looking past overlays such as
+// HP badges.
+function entityAt(x, y) {
+    let gamemap = document.getElementById("gamemap");
+    if (!gamemap) return null;
+    for (let element of document.elementsFromPoint(x, y)) {
+        if (!gamemap.contains(element)) continue;
+        let span = element.closest("span[id^='unit_'], span[id^='building_']");
+        if (span) return span;
+    }
+    return null;
+}
+
+function isUnit(entity) {
+    return /^unit_\d+$/.test(entity?.id || "");
+}
+
+function isShown(element) {
+    return !!element && element.style.display !== "none" && element.offsetParent !== null;
+}
+
+function menuIsOpenFor(menu, entity, topOffset) {
+    return isShown(menu) &&
+        parseInt(menu.style.left) === parseInt(entity.style.left) + 16 &&
+        parseInt(menu.style.top) === parseInt(entity.style.top) + topOffset;
+}
+
+// Opens `menu` for `entity` by clicking it, as the player would. Returns whether it's open.
+function openMenuFor(entity, menu, topOffset) {
+    if (!entity || !menu) return false;
+    // AWBW works out what was clicked from the image's parent span.
+    let clickTarget = entity.querySelector("img") || entity;
+    // While AWBW has something selected (an open menu, or a unit being moved), its next map click only
+    // deselects it, so it can take a second click to open the menu.
+    for (let i = 0; i < 2 && !menuIsOpenFor(menu, entity, topOffset); i++) {
+        clickTarget.click();
+    }
+    return menuIsOpenFor(menu, entity, topOffset);
+}
+
+// Opens the unit's menu and runs `action` with it.
+function withUnitMenu(unit, action) {
+    if (!isUnit(unit)) return;
+    let menu = document.getElementById("options-menu");
+    if (openMenuFor(unit, menu, kUnitMenuTopOffset)) {
+        action(menu);
+    } else {
+        console.warn("[AWBW Enhancements] Quick action: the menu didn't open for", unit.id);
+    }
+}
+
+// Closes the unit menu the way AWBW does when the player clicks a part of it that isn't an option.
+function closeUnitMenu(menu) {
+    menu.click();
+}
+
+function clickMenuItem(menu, selector) {
+    let item = menu.querySelector(selector);
+    if (item) {
+        item.click();
+    } else {
+        console.warn("[AWBW Enhancements] Quick action: no", selector, "in the menu");
+    }
+}
+
+function setUnitHp(unit, hp) {
+    withUnitMenu(unit, (menu) => {
+        let hpInput = menu.querySelector("#hp");
+        if (!hpInput) return;
+        hpInput.value = hp;
+        clickMenuItem(menu, "#set-hp");
+    });
+}
+
+// optionIndex 0 converts the building to the unit's army, 1 makes it neutral.
+function convertBuilding(unit, optionIndex) {
+    let root = document.documentElement;
+    withUnitMenu(unit, (menu) => {
+        let clickOption = () => {
+            // The player may have moved on while the options were loading.
+            if (!menuIsOpenFor(menu, unit, kUnitMenuTopOffset)) return;
+            let options = menu.querySelectorAll("#building-options li");
+            if (options.length > optionIndex) {
+                (options[optionIndex].querySelector("img") || options[optionIndex]).click();
+            } else {
+                // No options when the unit isn't on a building, it's on an HQ or silo, or AWBW's server has
+                // nothing for the tile (often the case in replays). Don't leave the menu open for nothing.
+                closeUnitMenu(menu);
+            }
+        };
+
+        // The request for this menu's options is the latest one: either the click that just opened the
+        // menu sent it, or the menu was already open and nothing has been requested since.
+        let sent = root.dataset.awbweBuildingInfoSent;
+        if (sent === undefined) {
+            // The hook isn't installed, so the best we can do is use whatever options are showing.
+            clickOption();
             return;
         }
-
-        // Buildings don't always have a nice ID, but they are clickable elements on the map.
-        // We can check if we are hovering over a span inside the gamemap that isn't a unit.
-        // This is a bit broad, but since we only click on hotkey press, it should be safe.
-        let mapContainer = document.getElementById("gamemap");
-        if (mapContainer && mapContainer.contains(target)) {
-            // Check if it's a span (tiles are spans)
-            let tileSpan = target.closest("span");
-            if (tileSpan) {
-                hoveredEntity = tileSpan;
-                return;
-            }
+        if (root.dataset.awbweBuildingInfoReady === sent) {
+            clickOption();
+            return;
         }
-
-        hoveredEntity = null;
+        let timeout = null;
+        let onReady = (e) => {
+            if (e.detail !== sent) return;
+            document.removeEventListener("awbwe-building-info", onReady);
+            clearTimeout(timeout);
+            clickOption();
+        };
+        document.addEventListener("awbwe-building-info", onReady);
+        timeout = setTimeout(() => {
+            document.removeEventListener("awbwe-building-info", onReady);
+            console.warn("[AWBW Enhancements] Quick convert: timed out waiting for the building's options");
+            if (menuIsOpenFor(menu, unit, kUnitMenuTopOffset)) closeUnitMenu(menu);
+        }, kBuildingInfoTimeoutMs);
     });
+}
 
+function buildUnit(building, unitName) {
+    let buildMenu = document.getElementById("build-menu");
+    // Nothing opens for neutral buildings.
+    if (!openMenuFor(building, buildMenu, kBuildMenuTopOffset)) return;
+    let item = Array.from(buildMenu.querySelectorAll("ul#units li"))
+        .find((li) => li.textContent.trim() === unitName);
+    if (item) item.click();
+}
+
+const kBaseUnits = [
+    { name: "Infantry", option: "options_bindings_quick_build_infantry_hotkey" },
+    { name: "Mech", option: "options_bindings_quick_build_mech_hotkey" },
+    { name: "Recon", option: "options_bindings_quick_build_recon_hotkey" },
+    { name: "Tank", option: "options_bindings_quick_build_tank_hotkey" },
+    { name: "Md.Tank", option: "options_bindings_quick_build_md_tank_hotkey" },
+    { name: "Neotank", option: "options_bindings_quick_build_neotank_hotkey" },
+    { name: "Mega Tank", option: "options_bindings_quick_build_megatank_hotkey" },
+    { name: "APC", option: "options_bindings_quick_build_apc_hotkey" },
+    { name: "Artillery", option: "options_bindings_quick_build_artillery_hotkey" },
+    { name: "Rocket", option: "options_bindings_quick_build_rocket_hotkey" },
+    { name: "Anti-Air", option: "options_bindings_quick_build_anti_air_hotkey" },
+    { name: "Missile", option: "options_bindings_quick_build_missile_hotkey" },
+    { name: "Piperunner", option: "options_bindings_quick_build_piperunner_hotkey" },
+];
+const kAirportUnits = [
+    { name: "T-Copter", option: "options_bindings_quick_build_t_copter_hotkey" },
+    { name: "B-Copter", option: "options_bindings_quick_build_b_copter_hotkey" },
+    { name: "Fighter", option: "options_bindings_quick_build_fighter_hotkey" },
+    { name: "Bomber", option: "options_bindings_quick_build_bomber_hotkey" },
+    { name: "Stealth", option: "options_bindings_quick_build_stealth_hotkey" },
+    { name: "Black Bomb", option: "options_bindings_quick_build_black_bomb_hotkey" },
+];
+const kPortUnits = [
+    { name: "Black Boat", option: "options_bindings_quick_build_black_boat_hotkey" },
+    { name: "Lander", option: "options_bindings_quick_build_lander_hotkey" },
+    { name: "Cruiser", option: "options_bindings_quick_build_cruiser_hotkey" },
+    { name: "Sub", option: "options_bindings_quick_build_sub_hotkey" },
+    { name: "Battleship", option: "options_bindings_quick_build_battleship_hotkey" },
+    { name: "Carrier", option: "options_bindings_quick_build_carrier_hotkey" },
+];
+
+function buildableUnits(entity) {
+    if (!/^building_/.test(entity?.id || "")) return [];
+    // The same check AWBW uses to decide which build menu to show.
+    let match = (entity.querySelector("img")?.getAttribute("src") || "").match(/(base|airport|port)(_snow|_rain|)\.gif/);
+    if (!match) return [];
+    return { base: kBaseUnits, airport: kAirportUnits, port: kPortUnits }[match[1]];
+}
+
+function initializeQuickActions(options) {
     let mouseX = 0;
     let mouseY = 0;
     document.addEventListener('mousemove', (e) => {
@@ -395,150 +570,95 @@ function initializeQuickActions(options) {
         mouseY = e.clientY;
     });
 
+    trackUnitMoves();
+
     document.addEventListener('keyup', (e) => {
         let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
         if (quickMoveKeys.includes(e.keyCode)) {
-            let duration = Date.now() - quickMoveStartTime;
-            if (duration > 150) {
-                // Drag-and-drop behavior: if held for > 150ms, confirm move on release
-                // Use elementFromPoint to handle clicks even on corners/overlays where hoveredEntity might be null
-                let target = document.elementFromPoint(mouseX, mouseY);
-                if (target) {
-                    target.click();
+            // Drag-and-drop: releasing drops the unit if it was dragged to another tile (however quickly), or
+            // if the key was held. A quick tap leaves the unit following the cursor until the next press.
+            let pickup = quickMovePickup;
+            quickMovePickup = null;
+            if (pickup && unitBeingMoved) {
+                let dragged = pickup.unit.style.left !== pickup.left || pickup.unit.style.top !== pickup.top;
+                if (dragged || Date.now() - pickup.startTime > 150) {
+                    dropMovingUnit(mouseX, mouseY);
                 }
             }
-            quickMoveStartTime = 0;
         }
     });
 
     document.addEventListener('keydown', (e) => {
         // Ignore if user is typing in an input field
-        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+        let active = document.activeElement;
+        if (active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable)) {
             return;
         }
 
-        // Ignore key repeats (holding down the key)
-        if (e.repeat) {
+        // Ignore key repeats (holding down the key) and browser shortcuts
+        if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) {
             return;
         }
+
+        let hotkeyFor = (option, defaultKey) => (options[option] || [defaultKey]).includes(e.keyCode);
+        let target = entityAt(mouseX, mouseY);
 
         // --- Quick Move ---
-        let quickMoveKeys = options.options_bindings_quick_move_hotkey || [66]; // Default to 'B' (66)
-
-        if (quickMoveKeys.includes(e.keyCode)) {
-            quickMoveStartTime = Date.now();
-            handleQuickAction(() => clickMoveOption(), 0);
+        // Press to pick up the unit under the cursor, and press again (or release after holding) to drop it.
+        if (hotkeyFor("options_bindings_quick_move_hotkey", 66)) { // Default 'B'
+            if (unitBeingMoved) {
+                quickMovePickup = null;
+                dropMovingUnit(mouseX, mouseY);
+                return;
+            }
+            withUnitMenu(target, (menu) => {
+                quickMovePickup = { unit: target, left: target.style.left, top: target.style.top, startTime: Date.now() };
+                clickMenuItem(menu, "#move");
+            });
             return;
         }
 
         // --- Quick Set HP ---
-        // Check for number keys 0-9
-        // Key codes: 48 ('0') to 57 ('9')
+        // Number keys 1-9, and 0 for 10 HP
         if (e.keyCode >= 48 && e.keyCode <= 57) {
-            let hpValue = e.keyCode - 48;
-            if (hpValue === 0) hpValue = 10;
-
-            handleQuickAction(() => setUnitHp(hpValue), 0);
+            setUnitHp(target, e.keyCode === 48 ? 10 : e.keyCode - 48);
+            return;
         }
 
         // --- Quick Convert Building ---
-        let convertArmyKeys = options.options_bindings_quick_convert_army_hotkey || [86]; // Default 'V'
-        if (convertArmyKeys.includes(e.keyCode)) {
-            let cx = mouseX;
-            let cy = mouseY;
-            handleQuickAction(() => convertBuilding(0, cx, cy), 250); // 0 = First option (Army), Increased delay to 250ms to ensure menu position updates
+        if (hotkeyFor("options_bindings_quick_convert_army_hotkey", 86)) { // Default 'V'
+            convertBuilding(target, 0);
+            return;
+        }
+        if (hotkeyFor("options_bindings_quick_convert_neutral_hotkey", 78)) { // Default 'N'
+            convertBuilding(target, 1);
             return;
         }
 
-        let convertNeutralKeys = options.options_bindings_quick_convert_neutral_hotkey || [78]; // Default 'N'
-        if (convertNeutralKeys.includes(e.keyCode)) {
-            let cx = mouseX;
-            let cy = mouseY;
-            handleQuickAction(() => convertBuilding(1, cx, cy), 250); // 1 = Second option (Neutral), Increased delay to 250ms
-            return;
-        }
-
-        // --- Quick Remove Unit ---
-        let removeUnitKeys = options.options_bindings_quick_remove_unit_hotkey || [71]; // Default 'G'
-        if (removeUnitKeys.includes(e.keyCode)) {
-            handleQuickAction(() => clickRemoveOption(), 0);
-            return;
-        }
-
-        // --- Quick Capture ---
-        let captureKeys = options.options_bindings_quick_capture_hotkey || [70]; // Default 'F'
-        if (captureKeys.includes(e.keyCode)) {
-            handleQuickAction(() => clickCaptureOption(), 0);
-            return;
-        }
-
-        // --- Quick Wait ---
-        let waitKeys = options.options_bindings_quick_wait_hotkey || [83]; // Default 'S'
-        if (waitKeys.includes(e.keyCode)) {
-            handleQuickAction(() => clickWaitOption(), 0);
-            return;
-        }
-
-        // --- Quick Unwait ---
-        let unwaitKeys = options.options_bindings_quick_unwait_hotkey || [88]; // Default 'X'
-        if (unwaitKeys.includes(e.keyCode)) {
-            handleQuickAction(() => clickUnwaitOption(), 0);
-            return;
+        // --- Quick Remove / Capture / Wait / Unwait ---
+        let menuItems = [
+            { option: "options_bindings_quick_remove_unit_hotkey", defaultKey: 71, selector: "li#remove" },       // 'G'
+            { option: "options_bindings_quick_capture_hotkey", defaultKey: 70, selector: "#set-icon #capture" }, // 'F'
+            { option: "options_bindings_quick_wait_hotkey", defaultKey: 83, selector: "li#wait" },               // 'S'
+            { option: "options_bindings_quick_unwait_hotkey", defaultKey: 88, selector: "li#unwait" },           // 'X'
+        ];
+        for (let item of menuItems) {
+            if (hotkeyFor(item.option, item.defaultKey)) {
+                withUnitMenu(target, (menu) => clickMenuItem(menu, item.selector));
+                return;
+            }
         }
 
         // --- Quick Build (Unit Specific) ---
-        // Define buildable units for each facility type
-        const kBaseUnits = [
-            { name: "Infantry", option: "options_bindings_quick_build_infantry_hotkey" },
-            { name: "Mech", option: "options_bindings_quick_build_mech_hotkey" },
-            { name: "Recon", option: "options_bindings_quick_build_recon_hotkey" },
-            { name: "Tank", option: "options_bindings_quick_build_tank_hotkey" },
-            { name: "Md.Tank", option: "options_bindings_quick_build_md_tank_hotkey" },
-            { name: "Neotank", option: "options_bindings_quick_build_neotank_hotkey" },
-            { name: "Mega Tank", option: "options_bindings_quick_build_megatank_hotkey" },
-            { name: "APC", option: "options_bindings_quick_build_apc_hotkey" },
-            { name: "Artillery", option: "options_bindings_quick_build_artillery_hotkey" },
-            { name: "Rocket", option: "options_bindings_quick_build_rocket_hotkey" },
-            { name: "Anti-Air", option: "options_bindings_quick_build_anti_air_hotkey" },
-            { name: "Missile", option: "options_bindings_quick_build_missile_hotkey" },
-            { name: "Piperunner", option: "options_bindings_quick_build_piperunner_hotkey" },
-        ];
-        const kAirportUnits = [
-            { name: "T-Copter", option: "options_bindings_quick_build_t_copter_hotkey" },
-            { name: "B-Copter", option: "options_bindings_quick_build_b_copter_hotkey" },
-            { name: "Fighter", option: "options_bindings_quick_build_fighter_hotkey" },
-            { name: "Bomber", option: "options_bindings_quick_build_bomber_hotkey" },
-            { name: "Stealth", option: "options_bindings_quick_build_stealth_hotkey" },
-            { name: "Black Bomb", option: "options_bindings_quick_build_black_bomb_hotkey" },
-        ];
-        const kPortUnits = [
-            { name: "Black Boat", option: "options_bindings_quick_build_black_boat_hotkey" },
-            { name: "Lander", option: "options_bindings_quick_build_lander_hotkey" },
-            { name: "Cruiser", option: "options_bindings_quick_build_cruiser_hotkey" },
-            { name: "Sub", option: "options_bindings_quick_build_sub_hotkey" },
-            { name: "Battleship", option: "options_bindings_quick_build_battleship_hotkey" },
-            { name: "Carrier", option: "options_bindings_quick_build_carrier_hotkey" },
-        ];
-
-        let buildableUnits = [];
-        if (hoveredEntity) {
-            let src = hoveredEntity.querySelector("img")?.getAttribute("src") || "";
-            if (src.includes("base")) buildableUnits = kBaseUnits;
-            else if (src.includes("airport")) buildableUnits = kAirportUnits;
-            else if (src.includes("port")) buildableUnits = kPortUnits;
-        }
-
-        for (let unit of buildableUnits) {
-            let hotkeys = options[unit.option] || [];
-            if (hotkeys.includes(e.keyCode)) {
-                handleQuickAction(() => clickBuildOption([unit.name]), 50);
+        for (let unit of buildableUnits(target)) {
+            if ((options[unit.option] || []).includes(e.keyCode)) {
+                buildUnit(target, unit.name);
                 return;
             }
         }
 
         // --- End Turn (M) ---
-        let endTurnKeys = options.options_bindings_end_turn_hotkey || [77]; // Default 'M'
-        if (endTurnKeys.includes(e.keyCode)) {
+        if (hotkeyFor("options_bindings_end_turn_hotkey", 77)) { // Default 'M'
             let endTurnBtn = document.querySelector(".js-end-turn-btn");
             if (endTurnBtn && endTurnBtn.offsetParent !== null) { // Check if visible
                 endTurnBtn.click();
@@ -547,227 +667,6 @@ function initializeQuickActions(options) {
         }
     });
 }
-
-function closeMenus() {
-    let optionsMenu = document.getElementById("options-menu");
-    let buildMenu = document.getElementById("build-menu");
-
-    if (optionsMenu) {
-        optionsMenu.style.display = "none";
-    }
-    if (buildMenu) {
-        buildMenu.style.display = "none";
-    }
-
-    menuOwner = null;
-}
-
-function handleQuickAction(actionCallback, delay = 0) {
-    // Capture the current hovered entity immediately to prevent race conditions
-    let targetEntity = hoveredEntity;
-
-    let optionsMenu = document.getElementById("options-menu");
-    let buildMenu = document.getElementById("build-menu");
-
-    let menuVisible = (optionsMenu && optionsMenu.offsetParent !== null) ||
-        (buildMenu && buildMenu.offsetParent !== null);
-
-    console.log("[AWBW Debug] handleQuickAction called:");
-    console.log("  hoveredEntity:", hoveredEntity);
-    console.log("  hoveredEntity.id:", hoveredEntity?.id);
-    console.log("  targetEntity:", targetEntity);
-    console.log("  targetEntity.id:", targetEntity?.id);
-    console.log("  menuOwner:", menuOwner);
-    console.log("  menuOwner.id:", menuOwner?.id);
-    console.log("  menuVisible:", menuVisible);
-
-    // If menu is visible but belongs to a different entity, close it
-    if (menuVisible && menuOwner !== targetEntity) {
-        console.log("[AWBW Debug] Closing stale menu (owner mismatch)");
-        closeMenus();
-        menuVisible = false;
-    }
-
-    if (menuVisible) {
-        // Menu is open for the correct entity, perform action immediately
-        console.log("[AWBW Debug] Menu visible for correct entity, performing action immediately");
-        actionCallback();
-    } else if (targetEntity) {
-        // Menu is closed (or we just closed it), open it for the hovered entity
-        console.log("[AWBW Debug] Opening menu for targetEntity:", targetEntity.id);
-
-        // IMPORTANT: Always close any existing menus first to ensure clean state
-        closeMenus();
-
-        // Wait a moment for menus to fully close before clicking new entity
-        setTimeout(() => {
-            menuOwner = targetEntity;
-            // Click on the img inside the span (clicking span directly causes errors)
-            let clickTarget = targetEntity.querySelector("img");
-            if (!clickTarget) {
-                // Fallback to clicking the span if there's no img
-                clickTarget = targetEntity;
-            }
-
-            console.log("[AWBW Debug] Clicking on:", clickTarget);
-            console.log("[AWBW Debug] Parent span ID:", targetEntity.id);
-            clickTarget.click();
-
-            // Wait a brief moment for menu to appear, then perform action
-            setTimeout(actionCallback, delay);
-        }, 50); // 50ms delay to let menus close
-    }
-}
-
-
-
-function setUnitHp(hp) {
-    let hpInput = document.getElementById("hp");
-    if (hpInput) {
-        hpInput.value = hp;
-        // Dispatch events so the site recognizes the change
-        hpInput.dispatchEvent(new Event('input', { bubbles: true }));
-        hpInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-        // Click the "Set HP" list item to confirm/apply
-        let setHpItem = document.getElementById("set-hp");
-        if (setHpItem) {
-            setHpItem.click();
-        }
-    }
-}
-
-function convertBuilding(optionIndex, targetX, targetY) {
-    // The building options are in a list inside #building-options
-    // They might take a moment to appear after the menu opens, so we poll for them.
-    let attempts = 0;
-    const maxAttempts = 50; // 50 * 10ms = 500ms max wait
-
-    function attemptClick() {
-        // CRITICAL: Find the visible options-menu first, then look for building-options inside it
-        // This prevents finding building-options from old/hidden menus
-        let optionsMenu = document.getElementById("options-menu");
-
-        if (optionsMenu && optionsMenu.offsetParent !== null) {
-            if (targetX !== undefined && targetY !== undefined && (targetX !== 0 || targetY !== 0)) {
-                let rect = optionsMenu.getBoundingClientRect();
-                let dist = Math.hypot(rect.left - targetX, rect.top - targetY);
-                if (dist > 100) { // Threshold for stale menu detection
-                    console.log("[AWBW Debug] convertBuilding: Menu too far (stale?), ignoring. Dist:", dist);
-                    optionsMenu = null;
-                }
-            }
-        }
-
-        console.log("[AWBW Debug] convertBuilding attempt", attempts);
-        console.log("[AWBW Debug] optionsMenu:", optionsMenu);
-        console.log("[AWBW Debug] optionsMenu offsetParent:", optionsMenu?.offsetParent);
-        console.log("[AWBW Debug] optionsMenu display:", optionsMenu?.style?.display);
-
-        if (optionsMenu && optionsMenu.offsetParent !== null) {
-            // Menu is visible, now look for building-options inside THIS menu
-            let buildingOptionsList = optionsMenu.querySelector("#building-options");
-
-            console.log("[AWBW Debug] buildingOptionsList:", buildingOptionsList);
-            console.log("[AWBW Debug] buildingOptionsList offsetParent:", buildingOptionsList?.offsetParent);
-
-            if (buildingOptionsList && buildingOptionsList.offsetParent !== null) {
-                let options = buildingOptionsList.querySelectorAll("li");
-                if (options.length > optionIndex) {
-                    console.log("[AWBW Debug] convertBuilding: Found visible building options, clicking option", optionIndex);
-                    console.log("[AWBW Debug] Options found:", options.length);
-                    // Click the image inside the list item, or the list item itself
-                    let target = options[optionIndex].querySelector("img") || options[optionIndex];
-                    target.click();
-                    return;
-                }
-            }
-        }
-
-        attempts++;
-        if (attempts < maxAttempts) {
-            setTimeout(attemptClick, 10);
-        } else {
-            console.log("[AWBW Debug] convertBuilding: Timed out waiting for building options");
-        }
-    }
-
-    attemptClick();
-}
-
-function clickMoveOption() {
-    let moveOption = document.getElementById("move");
-    if (moveOption) {
-        moveOption.click();
-    }
-}
-
-function pollAndClick(selector) {
-    let attempts = 0;
-    const maxAttempts = 50; // 50 * 10ms = 500ms max wait
-
-    function attempt() {
-        let element = document.querySelector(selector);
-        if (element && element.offsetParent !== null) {
-            element.click();
-            return;
-        }
-
-        attempts++;
-        if (attempts < maxAttempts) {
-            setTimeout(attempt, 10);
-        }
-    }
-    attempt();
-}
-
-function clickRemoveOption() {
-    pollAndClick("li#remove");
-}
-
-function clickCaptureOption() {
-    pollAndClick("#capture");
-}
-
-function clickWaitOption() {
-    pollAndClick("#wait");
-}
-
-function clickUnwaitOption() {
-    pollAndClick("#unwait");
-}
-
-function clickBuildOption(unitNames) {
-    // unitNames is an array of strings, e.g. ["Infantry", "T-Copter", "Black Boat"]
-    // We click the first one that appears in the menu.
-
-    let attempts = 0;
-    const maxAttempts = 50; // 50 * 10ms = 500ms max wait
-
-    function attempt() {
-        let buildMenu = document.getElementById("build-menu");
-        if (buildMenu && buildMenu.style.display !== "none" && buildMenu.offsetParent !== null) {
-            let unitsList = buildMenu.querySelector("ul#units");
-            if (unitsList) {
-                let items = unitsList.querySelectorAll("li");
-                for (let item of items) {
-                    let itemText = item.textContent.trim();
-                    if (unitNames.includes(itemText)) {
-                        item.click();
-                        return;
-                    }
-                }
-            }
-        }
-
-        attempts++;
-        if (attempts < maxAttempts) {
-            setTimeout(attempt, 10);
-        }
-    }
-    attempt();
-}
-
 
 function injectRequestedScripts(options, done) {
     let snapshotElement = document.createElement("div");
@@ -784,6 +683,7 @@ function injectRequestedScripts(options, done) {
     }
     scripts.push("/res/unitsinfo_patcher.js#" + JSON.stringify(options));
     scripts.push("/res/playersinfo_patcher.js");
+    scripts.push("/res/moveplanner_menu_hook.js");
     console.log("Injecting requested scripts:", scripts);
 
     function injectScript(scriptName, onload) {
