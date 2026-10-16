@@ -444,13 +444,17 @@ function initializeQuickActions(options) {
         // --- Quick Convert Building ---
         let convertArmyKeys = options.options_bindings_quick_convert_army_hotkey || [86]; // Default 'V'
         if (convertArmyKeys.includes(e.keyCode)) {
-            handleQuickAction(() => convertBuilding(0), 100); // 0 = First option (Army), 100ms delay for menu to open
+            let cx = mouseX;
+            let cy = mouseY;
+            handleQuickAction(() => convertBuilding(0, cx, cy), 250); // 0 = First option (Army), Increased delay to 250ms to ensure menu position updates
             return;
         }
 
         let convertNeutralKeys = options.options_bindings_quick_convert_neutral_hotkey || [78]; // Default 'N'
         if (convertNeutralKeys.includes(e.keyCode)) {
-            handleQuickAction(() => convertBuilding(1), 100); // 1 = Second option (Neutral), 100ms delay for menu to open
+            let cx = mouseX;
+            let cy = mouseY;
+            handleQuickAction(() => convertBuilding(1, cx, cy), 250); // 1 = Second option (Neutral), Increased delay to 250ms
             return;
         }
 
@@ -633,7 +637,7 @@ function setUnitHp(hp) {
     }
 }
 
-function convertBuilding(optionIndex) {
+function convertBuilding(optionIndex, targetX, targetY) {
     // The building options are in a list inside #building-options
     // They might take a moment to appear after the menu opens, so we poll for them.
     let attempts = 0;
@@ -643,6 +647,17 @@ function convertBuilding(optionIndex) {
         // CRITICAL: Find the visible options-menu first, then look for building-options inside it
         // This prevents finding building-options from old/hidden menus
         let optionsMenu = document.getElementById("options-menu");
+
+        if (optionsMenu && optionsMenu.offsetParent !== null) {
+            if (targetX !== undefined && targetY !== undefined && (targetX !== 0 || targetY !== 0)) {
+                let rect = optionsMenu.getBoundingClientRect();
+                let dist = Math.hypot(rect.left - targetX, rect.top - targetY);
+                if (dist > 100) { // Threshold for stale menu detection
+                    console.log("[AWBW Debug] convertBuilding: Menu too far (stale?), ignoring. Dist:", dist);
+                    optionsMenu = null;
+                }
+            }
+        }
 
         console.log("[AWBW Debug] convertBuilding attempt", attempts);
         console.log("[AWBW Debug] optionsMenu:", optionsMenu);

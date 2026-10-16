@@ -254,9 +254,21 @@
   width: 214px;
 }
 
+/* AWBW caps .player-overview-container at 245px, which is narrower than the player box plus the
+ * End Turn button, so the button would overflow the panel and get cut off.
+ */
+.awbwenhancements-sidebar-contents .player-overview-container {
+  max-width: none;
+}
+
 .awbwenhancements-player-controls {}
 
-.awbwenhancements-player-bar {}
+/* AWBW's .player-overview-bar is a grid with a minmax(0, 1fr) bar column, so the
+ * container needs an explicit width or the power bar collapses to nothing.
+ */
+.awbwenhancements-player-bar {
+  width: 214px;
+}
 
 .awbwenhancements-co-menu-container {
   position: relative;
