@@ -17,11 +17,15 @@
             "matches": [
                 "https://awbw.amarriner.com/game.php*"
             ],
+            "css": [
+                "res/multihit_calculator.css"
+            ],
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
                 "content_scripts/rate_limit_workaround_script.js",
-                "content_scripts/speedy_event_panel_script.js"
+                "content_scripts/speedy_event_panel_script.js",
+                "content_scripts/multihit_calculator_script.js"
             ]
         },
         {
@@ -42,7 +46,8 @@
                 "https://awbw.amarriner.com/moveplanner.php*"
             ],
             "css": [
-                "res/awbw_enhancements.css"
+                "res/awbw_enhancements.css",
+                "res/multihit_calculator.css"
             ],
             "js": [
                 "vendor/purify.min.js",
@@ -60,7 +65,8 @@
                 "lib/players_panel.js",
                 "lib/savestate_interceptor.js",
                 "lib/savestate_manager.js",
-                "content_scripts/moveplanner_plus_script.js"
+                "content_scripts/moveplanner_plus_script.js",
+                "content_scripts/multihit_calculator_script.js"
             ]
         }
     ],
@@ -82,6 +88,8 @@
     },
     "web_accessible_resources": [
         "/res/axios_throttler.js",
+        "/res/multihit_calculator.js",
+        "/res/multihit_engine.js",
         "/res/playersinfo_patcher.js",
         "/res/savestate_injector.js",
         "/res/unitsinfo_patcher.js"

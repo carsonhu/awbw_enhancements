@@ -97,6 +97,14 @@ This fork introduces a robust tree-based system for managing snapshots. You can 
 - **Load Tree**: Load a previously saved tree to resume analysis.
 - **Branching**: Create multiple branches of play to explore different strategies.
 
+### Multi-hit KO Calculator
+Adds a multi-hit mode to the damage calculator in games and the move planner (press **K**, or click **Multi-hit** in the calculator's title bar). Chain several attacks against one defender to see:
+- The chance of destroying the defender after each attack, with the luck of earlier attacks carried forward.
+- Each attack's damage range and the defender's HP distribution afterwards.
+- The counterattack each attacker takes.
+
+The first attack and the defender are the regular calculator's attacker and defender, laid out the same way; further attacks are listed below them. Hold **Shift+A** and click units to add attacks (this also works from the regular calculator, which switches to multi-hit and keeps the current matchup). Hold **D** and click a unit to set the defender, or hold **A** and click a unit to replace the highlighted attack. If you don't know the defender's exact HP (for example, you only know the damage range of an earlier attack, or the unit is Sonja's), type a **range** such as `4.1-5` into its HP, or click the HP icon. Every 0.1 HP step in the range is treated as equally likely. An "HP change before" field on each attack covers mid-turn power damage such as Kindle's Urban Blight. The damage math is based on [kilmefirst's multi-hit KO calculator](https://docs.google.com/spreadsheets/d/18t5FyJHUfuvbRretLZ-fZT3Bh3VtfKiSBX18HmhRQio).
+
 ### Automatic Unit Repair
 Units on properties that provide repairs (Cities, Bases, Ports, Airports) are now automatically repaired at the start of the turn, simulating the actual game mechanics.
 

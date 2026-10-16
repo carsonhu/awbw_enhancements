@@ -40,6 +40,20 @@ let kCheckOptionsMapping = [
             `Adds color coding, production sort order, and firepower and defense modifiers to the damage chart.`
         ],
     }, {
+        id: "enable-multihit-calculator",
+        name: "options_enable_multihit_calculator",
+        default: true,
+        label: "Enable Multi-hit KO Calculator",
+        description: [
+            `Adds a multi-hit mode to the damage calculator in games and the moveplanner. Chain several attacks ` +
+            `against one defender to see the chance of destroying it after each attack, the damage range of ` +
+            `each attack, and the counterattack each attacker takes.`,
+            `Switch modes with the "Multi-hit" / "Simple" buttons in the calculator's title bar, or hold Shift+A ` +
+            `and click units to add them as further attacks against the current defender. While the multi-hit ` +
+            `calculator is open, hold D and click a unit to set the defender, or hold A and click a unit to replace ` +
+            `the highlighted attack. If you don't know the defender's exact HP, type a range such as 4.1-5.`
+        ],
+    }, {
         id: "enable-moveplanner-plus",
         name: "options_enable_moveplanner_plus",
         default: true,
@@ -206,6 +220,14 @@ let kRangeOptionsMapping = [
 
 let kKeyboardOptionsMapping = [
     {
+        id: "multihit-calculator-hotkey",
+        name: "options_bindings_multihit_calculator_hotkey",
+        default: [75 /*k*/],
+        label: "Multi-hit Calculator",
+        description: [
+            `Keyboard shortcut to open or close the multi-hit KO calculator.`,
+        ],
+    }, {
         id: "hold-quick-move-range-preview",
         name: "options_bindings_hold_quick_move_range_preview",
         default: [16 /*shift*/],

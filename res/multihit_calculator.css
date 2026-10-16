@@ -1,0 +1,466 @@
+/* Multi-hit KO calculator. Styled to match AWBW's damage calculator (calculator_new.css). */
+
+/* AWBW's calculator stays "open" behind the multi-hit window so that map unit selection keeps working. */
+body.awbwe-mh-active #calculator {
+  display: none !important;
+}
+
+#calculator header .awbwe-mh-switch {
+  position: absolute;
+  right: 52px;
+}
+
+.awbwe-mh-switch {
+  background: white;
+  border-radius: 3px;
+  color: #0066CC;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 0 4px;
+}
+
+.awbwe-mh-switch:hover {
+  background: #DDDDDD;
+}
+
+#awbwe-multihit {
+  background: white;
+  border: 1px solid black;
+  font-family: sans-serif;
+  font-size: 13px;
+  position: absolute;
+  user-select: none;
+  box-sizing: border-box;
+  width: 340px;
+  z-index: 1200;
+}
+
+#awbwe-multihit input[type="text"] {
+  box-sizing: border-box;
+  font-size: 12px;
+  padding: 1px 2px;
+  width: 34px;
+}
+
+#awbwe-multihit input.awbwe-mh-small,
+#awbwe-multihit .awbwe-mh-side input[data-field="hp"] {
+  width: 26px;
+}
+
+#awbwe-multihit .awbwe-mh-side input.awbwe-mh-defender-hp {
+  width: 38px;
+}
+
+#awbwe-multihit input.awbwe-mh-funds {
+  width: 52px;
+}
+
+.awbwe-mh-titlebar {
+  align-items: center;
+  background: #0066CC;
+  border: 1px solid #888888;
+  color: white;
+  cursor: grab;
+  display: flex;
+  font-weight: bold;
+  gap: 6px;
+  padding: 2px 4px;
+}
+
+.awbwe-mh-titlebar .awbwe-mh-help {
+  margin-left: auto;
+}
+
+.awbwe-mh-close {
+  cursor: pointer;
+}
+
+.awbwe-mh-body {
+  max-height: 75vh;
+  overflow-y: auto;
+  padding: 0 3px 3px;
+}
+
+.awbwe-mh-section-header {
+  background: #0066CC;
+  color: white;
+  font-weight: bold;
+  margin-top: 4px;
+  padding: 1px 4px;
+}
+
+.awbwe-mh-section-header span,
+.awbwe-mh-row-buttons span {
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+.awbwe-mh-section-header span:hover,
+.awbwe-mh-row-buttons span:hover {
+  text-decoration: underline;
+}
+
+.awbwe-mh-selecting {
+  background: #DDDDDD;
+  color: black;
+}
+
+.awbwe-mh-defender,
+.awbwe-mh-attack {
+  background: #DDDDDD;
+  border: 1px solid #888888;
+  margin-top: 3px;
+  padding: 3px;
+}
+
+.awbwe-mh-disabled {
+  opacity: 0.55;
+}
+
+.awbwe-mh-active-attack {
+  border-color: #0066CC;
+  box-shadow: inset 0 0 0 1px #0066CC;
+}
+
+.awbwe-mh-help {
+  background: white;
+  border-radius: 50%;
+  color: #0066CC;
+  cursor: help;
+  font-size: 11px;
+  height: 14px;
+  line-height: 14px;
+  text-align: center;
+  width: 14px;
+}
+
+/* The defender's HP icon toggles an HP range. */
+.awbwe-mh-range-toggle {
+  border-radius: 2px;
+  cursor: pointer;
+  padding: 1px;
+}
+
+.awbwe-mh-range-toggle:hover,
+.awbwe-mh-range-toggle.awbwe-mh-on {
+  background: #99C2EB;
+}
+
+.awbwe-mh-row-buttons {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* CO portrait beside two rows of controls. */
+.awbwe-mh-side {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+.awbwe-mh-side-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.awbwe-mh-side-row {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  min-height: 20px;
+}
+
+.awbwe-mh-side img {
+  vertical-align: middle;
+}
+
+.awbwe-mh-co {
+  background: white;
+  border: 1px solid #888888;
+  cursor: pointer;
+  height: 32px;
+  width: 32px;
+}
+
+.awbwe-mh-unit,
+.awbwe-mh-terrain {
+  background: white;
+  border: 1px solid #888888;
+  cursor: pointer;
+  display: inline-flex;
+  position: relative;
+}
+
+.awbwe-mh-unit {
+  height: 16px;
+  justify-content: center;
+  padding: 2px;
+  width: 16px;
+}
+
+.awbwe-mh-hp-overlay {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+}
+
+.awbwe-mh-terrain {
+  align-items: flex-end;
+  gap: 1px;
+  padding: 1px 2px 1px 1px;
+}
+
+/* Natural size: buildings, mountains and HQs are taller than 16px and get distorted when squeezed. */
+.awbwe-mh-terrain > img {
+  height: auto;
+  width: 16px;
+}
+
+.awbwe-mh-stars {
+  align-items: center;
+  align-self: center;
+  display: inline-flex;
+  font-size: 11px;
+}
+
+.awbwe-mh-field {
+  align-items: center;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.awbwe-mh-powers {
+  display: inline-flex;
+}
+
+.awbwe-mh-powers img,
+.awbwe-mh-ammo {
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.awbwe-mh-powers img.awbwe-mh-on {
+  border-color: #33CC33;
+}
+
+.awbwe-mh-ammo.awbwe-mh-off {
+  border-color: #CC3333;
+  opacity: 0.6;
+}
+
+.awbwe-mh-result {
+  background: white;
+  border: 1px solid #BBBBBB;
+  font-size: 12px;
+  margin-top: 3px;
+  padding: 2px 4px;
+}
+
+.awbwe-mh-result-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.awbwe-mh-result-line img {
+  height: 12px;
+}
+
+.awbwe-mh-dim {
+  color: #666666;
+}
+
+.awbwe-mh-warning {
+  color: #B00020;
+}
+
+.awbwe-mh-empty {
+  color: #666666;
+  padding: 6px;
+  text-align: center;
+}
+
+.awbwe-mh-summary {
+  font-size: 12px;
+  padding: 4px 2px 0;
+}
+
+/* --awbwe-mh-fill (the outcome's probability) is set inline. */
+.awbwe-mh-outcome {
+  background: linear-gradient(to right, #C6DCF2 var(--awbwe-mh-fill), #F2F2F2 var(--awbwe-mh-fill));
+  border: 1px solid #80B2E5;
+  border-radius: 3px;
+  color: #333333;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+.awbwe-mh-outcome b {
+  color: #0055AA;
+}
+
+.awbwe-mh-outcome.awbwe-mh-outcome-ko {
+  background: linear-gradient(to right, #F2C4CB var(--awbwe-mh-fill), #F2F2F2 var(--awbwe-mh-fill));
+  border-color: #D88090;
+}
+
+.awbwe-mh-outcome.awbwe-mh-outcome-ko b {
+  color: #B00020;
+}
+
+/* An id selector, so AWBW's div[class$="-menu"] calculator styles can't override it. */
+#awbwe-mh-menu {
+  background: white;
+  border: 1px solid #888888;
+  flex-wrap: wrap;
+  position: absolute;
+  z-index: 1300;
+}
+
+#awbwe-mh-menu img {
+  background: #DDDDDD;
+  border: 1px solid #888888;
+  cursor: pointer;
+  margin: 1px;
+}
+
+#awbwe-mh-menu img:hover {
+  transform: scale(1.2);
+}
+
+#awbwe-mh-menu.awbwe-mh-co-menu {
+  width: 248px;
+}
+
+#awbwe-mh-menu.awbwe-mh-co-menu img {
+  height: 32px;
+  width: 32px;
+}
+
+#awbwe-mh-menu.awbwe-mh-unit-menu {
+  width: 200px;
+}
+
+#awbwe-mh-menu.awbwe-mh-terrain-menu {
+  width: 200px;
+}
+
+#awbwe-mh-menu.awbwe-mh-terrain-menu img {
+  height: 16px;
+  width: 16px;
+}
+
+/* Attack 1 and the defender, side by side like the regular calculator. */
+.awbwe-mh-matchup {
+  display: flex;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.awbwe-mh-column {
+  background: #DDDDDD;
+  border: 1px solid #888888;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.awbwe-mh-matchup .awbwe-mh-attack,
+.awbwe-mh-matchup .awbwe-mh-defender {
+  margin-top: 0;
+  padding: 0;
+}
+
+.awbwe-mh-column-header {
+  align-items: center;
+  background: #0066CC;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 1px 4px;
+}
+
+.awbwe-mh-column-header span {
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.awbwe-mh-column-header span:hover {
+  text-decoration: underline;
+}
+
+.awbwe-mh-column .awbwe-mh-side {
+  justify-content: center;
+  padding: 3px 2px;
+}
+
+.awbwe-mh-column .awbwe-mh-side-row {
+  justify-content: center;
+}
+
+/* CO-specific inputs (and attack 1's HP change, when set) under attack 1's grid. */
+.awbwe-mh-column > .awbwe-mh-extras {
+  font-size: 11px;
+  padding: 0 2px 3px;
+}
+
+.awbwe-mh-column-result {
+  background: white;
+  border-top: 1px solid #BBBBBB;
+  font-size: 12px;
+  margin-top: auto;
+  padding: 2px 4px;
+}
+
+.awbwe-mh-column-result .awbwe-mh-result-line {
+  gap: 2px;
+  justify-content: center;
+  text-align: center;
+}
+
+.awbwe-mh-column-result .awbwe-mh-outcome {
+  font-size: 11px;
+  padding: 0 2px;
+}
+
+/* Further attacks: checkbox and number, the side grid, then the attack's own settings. */
+.awbwe-mh-attack-body {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+}
+
+.awbwe-mh-attack-number {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.awbwe-mh-attack-number input {
+  margin: 0;
+}
+
+.awbwe-mh-attack-settings {
+  color: #444444;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 11px;
+  gap: 3px;
+}
+
+.awbwe-mh-attack-settings .awbwe-mh-row-buttons span {
+  margin-left: 3px;
+}
+
+.awbwe-mh-result-line.awbwe-mh-spaced {
+  column-gap: 10px;
+}
