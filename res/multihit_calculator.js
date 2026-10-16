@@ -79,7 +79,10 @@
         const calcEl = document.getElementById("calculator");
 
         let state = loadState();
+        // Where the next attacker picked from the map goes: replacing pendingReplaceIndex when a [Select] button
+        // asked for it, a new attack when [Add from map] did, and otherwise attack 1, like the regular calculator.
         let pendingReplaceIndex = null;
+        let pendingAppend = false;
         let drag = null;
         let tileImageCache = {};
 
@@ -100,7 +103,7 @@
             try {
                 saved = JSON.parse(sessionStorage.getItem(kStorageKey));
             } catch (e) {}
-            return Object.assign({ mode: "simple", defender: null, attacks: [], activeIndex: null, position: null, synced: null },
+            return Object.assign({ mode: "simple", defender: null, attacks: [], position: null, synced: null },
                                  saved || {});
         }
 
@@ -299,16 +302,16 @@
 
         const kHelpText = [
             "Defender HP: type a range like 4.1-5 (or click the heart) when you don't know the exact HP",
-            "Hold D and click a unit: set the defender",
-            "Hold A and click a unit: replace the highlighted attack",
+            "A / D: set the attacker (attack 1) / defender, as with the regular calculator",
             "Hold Shift+A and click units: add attacks (also works from the regular calculator)",
         ].concat(kHotkeys.length ? [`Open / close: ${kHotkeys.map((code) => String.fromCharCode(code)).join(" / ")}`] : [])
          .join("\n");
 
         // ---- Map unit selection ----
 
-        // AWBW's calculator fills its attacker/defender from map clicks (the [Select] buttons and holding A/D).
-        // While the multi-hit calculator is open, those selections go to it instead.
+        // AWBW's calculator fills its attacker/defender from map picks: its [Select] buttons, holding A/D and
+        // clicking, and other scripts' hotkeys (such as AWBW Advanced Hotkeys picking the unit under the cursor).
+        // While the multi-hit calculator is open, those picks go to it instead.
         const originalAddUnitToCalc = calculator.addUnitToCalc;
         calculator.addUnitToCalc = function (position, id) {
             if (!isMultiVisible()) return originalAddUnitToCalc.apply(this, arguments);
@@ -332,28 +335,32 @@
                 state.defender = makeDefender(source, hpUnknown);
             } else {
                 let attack = makeAttack(source);
-                if (pendingReplaceIndex !== null && state.attacks[pendingReplaceIndex]) {
-                    attack.hpChangeBefore = state.attacks[pendingReplaceIndex].hpChangeBefore;
-                    attack.enabled = state.attacks[pendingReplaceIndex].enabled;
-                    state.attacks[pendingReplaceIndex] = attack;
-                    state.activeIndex = pendingReplaceIndex;
+                let appending = pendingAppend || held?.append;
+                let index = pendingReplaceIndex ?? (appending ? null : 0);
+                if (index !== null && state.attacks[index]) {
+                    attack.hpChangeBefore = state.attacks[index].hpChangeBefore;
+                    attack.enabled = state.attacks[index].enabled;
+                    state.attacks[index] = attack;
                 } else {
                     state.attacks.push(attack);
-                    state.activeIndex = state.attacks.length - 1;
+                    index = state.attacks.length - 1;
                 }
-                if (state.activeIndex !== 0) {
+                if (index !== 0) {
                     Object.assign(calculator.attacker, previous);
                 }
             }
             rememberSynced();
             pendingReplaceIndex = null;
+            pendingAppend = false;
             saveState();
             render();
             rearmHeldSelection();
         }
 
-        function selectFromMap(position, replaceIndex) {
-            pendingReplaceIndex = replaceIndex ?? null;
+        // `target` is an attack's index to replace it, or "append" to add an attack.
+        function selectFromMap(position, target) {
+            pendingReplaceIndex = typeof target === "number" ? target : null;
+            pendingAppend = target === "append";
             // selectUnit() toggles, so cancel any selection that's already in progress first.
             if (calculator.selectorPosition) {
                 calculator.selectUnit(calculator.selectorPosition);
@@ -364,19 +371,11 @@
 
         // ---- A / D / Shift+A selection hotkeys ----
 
-        // AWBW's own A/D shortcuts are ignored whenever anything has focus (like one of this calculator's inputs),
-        // so while the multi-hit calculator is open it handles them itself:
-        //   hold A and click a unit: replace the highlighted attack
-        //   hold Shift+A and click units: add attacks (several, while the keys are held)
-        //   hold D and click a unit: set the defender
+        // Plain A and D are left to AWBW (hold and click a unit) or to other scripts' hotkeys; their picks arrive
+        // through addUnitToCalc above, setting attack 1 or the defender. Shift+A is this calculator's own: hold it
+        // and click units to add attacks, several while the keys are held.
         let held = null;  // {key, append}
         let hiddenFireOptions = [];
-
-        function activeAttackIndex() {
-            if (state.attacks.length === 0) return null;
-            let index = state.activeIndex;
-            return index !== null && index >= 0 && index < state.attacks.length ? index : state.attacks.length - 1;
-        }
 
         function mapElement() {
             return typeof gamemap !== "undefined" ? gamemap : document.getElementById("gamemap");
@@ -394,7 +393,7 @@
             hiddenFireOptions = Array.from(document.querySelectorAll(".fire-option"));
             hiddenFireOptions.forEach((option) => option.style.display = "none");
 
-            pendingReplaceIndex = held.key === "a" && !held.append ? activeAttackIndex() : null;
+            pendingReplaceIndex = null;
             calculator.shortcutPressed = held.key;
             calculator.selectorPosition = held.key === "d" ? "defender" : "attacker";
             calculator.selectState("#DDDDDD", "black", "grab");
@@ -424,27 +423,30 @@
             return element && root.contains(element) && element.tagName === "INPUT" && element.type === "text";
         }
 
-        // Shift+A also works outside the multi-hit calculator: it switches over, keeping the current matchup.
+        function isSelectionHotkey(e) {
+            return !e.ctrlKey && !e.altKey && !e.metaKey && /^[ad]$/i.test(e.key || "");
+        }
+
         window.addEventListener("keydown", (e) => {
-            if (e.ctrlKey || e.altKey || e.metaKey) return;
-            let key = (e.key || "").toLowerCase();
-            if (key !== "a" && key !== "d") return;
-            let fromSimple = !isMultiVisible();
-            if (fromSimple && !(key === "a" && e.shiftKey)) return;
+            if (!isSelectionHotkey(e)) return;
             let target = e.target;
-            // Letters are never valid in the calculator's number fields, so treat them as hotkeys there too.
             let typing = target && (target.isContentEditable || /^(input|textarea|select)$/i.test(target.tagName));
             if (typing && !isOwnTextInput(target)) return;
+            // Letters are never valid in this calculator's number fields, so treat them as hotkeys there too:
+            // AWBW's shortcuts ignore keys while a field has focus, so the field gives it up first.
+            if (isMultiVisible() && isOwnTextInput(document.activeElement)) {
+                document.activeElement.blur();
+            }
+            if (!(e.key.toLowerCase() === "a" && e.shiftKey)) return;
+
+            // Shift+A also works outside the multi-hit calculator: it switches over, keeping the current matchup.
             e.preventDefault();
             e.stopPropagation();
             if (held) return;
-            if (fromSimple) {
+            if (!isMultiVisible()) {
                 showMulti();
             }
-            if (isOwnTextInput(document.activeElement)) {
-                document.activeElement.blur();
-            }
-            held = { key, append: key === "a" && e.shiftKey };
+            held = { key: "a", append: true };
             startHeldSelection();
         }, true);
 
@@ -724,7 +726,7 @@
             let selecting = pendingReplaceIndex === index && calculator.selectorPosition === "attacker";
             let p = sideControlParts(attack, "a" + index, false);
             return `
-<div class="awbwe-mh-attack ${attack.enabled ? "" : "awbwe-mh-disabled"} ${index === activeAttackIndex() ? "awbwe-mh-active-attack" : ""}" data-index="${index}">
+<div class="awbwe-mh-attack ${attack.enabled ? "" : "awbwe-mh-disabled"}" data-index="${index}">
   <div class="awbwe-mh-attack-body">
     <label class="awbwe-mh-attack-number" title="Include attack ${index + 1}">
       <input type="checkbox" data-field="enabled" data-key="a${index}" ${attack.enabled ? "checked" : ""}>${index + 1}
@@ -737,7 +739,7 @@
           <input type="text" class="awbwe-mh-small" data-field="hpChangeBefore" data-key="a${index}" value="${esc(attack.hpChangeBefore)}">
         </label>
         <span class="awbwe-mh-row-buttons">
-          <span data-action="reselect" data-index="${index}" class="${selecting ? "awbwe-mh-selecting" : ""}" title="Replace with a unit from the map (or hold A and click a unit to replace the highlighted attack)">[Select]</span>
+          <span data-action="reselect" data-index="${index}" class="${selecting ? "awbwe-mh-selecting" : ""}" title="Replace with a unit from the map">[Select]</span>
         </span>
       </div>
       <div class="awbwe-mh-side-row">
@@ -756,8 +758,9 @@
 
         function templateMatchup() {
             let first = state.attacks[0];
-            let selectingFirst = pendingReplaceIndex === 0 && calculator.selectorPosition === "attacker";
-            let selectingNew = calculator.selectorPosition === "attacker" && pendingReplaceIndex === null;
+            let selectingAttacker = calculator.selectorPosition === "attacker";
+            let selectingFirst = selectingAttacker && (pendingReplaceIndex ?? (pendingAppend || held?.append ? null : 0)) === 0;
+            let selectingNew = selectingAttacker && !state.attacks.length;
             let selectingDefender = calculator.selectorPosition === "defender";
             // Attack 1's HP change is the same as editing the defender's HP, so it only shows when it's been set.
             let firstExtras = first && parseNumber(first.hpChangeBefore, 0) ? `
@@ -769,7 +772,7 @@
     <div class="awbwe-mh-column-header">
       <span data-action="swap" title="Swap attacker and defender">[Swap]</span>
       <b>Attacker</b>
-      <span data-action="reselect" data-index="0" class="${selectingFirst ? "awbwe-mh-selecting" : ""}" title="Replace with a unit from the map (or hold A and click a unit)">[Select]</span>
+      <span data-action="reselect" data-index="0" class="${selectingFirst ? "awbwe-mh-selecting" : ""}" title="Replace with a unit from the map (or press A, as with the regular calculator)">[Select]</span>
     </div>
     ${templateCalculatorSide(first, "a0", false)}
     ${firstExtras ? `<div class="awbwe-mh-side-row awbwe-mh-extras">${firstExtras}</div>` : ""}
@@ -782,7 +785,7 @@
     <div class="awbwe-mh-empty">Select an attacker from the map.</div>`;
             return `
 <div class="awbwe-mh-matchup">
-  <div class="awbwe-mh-column ${first ? "awbwe-mh-attack" : ""} ${first && activeAttackIndex() === 0 ? "awbwe-mh-active-attack" : ""}" data-index="0">
+  <div class="awbwe-mh-column ${first ? "awbwe-mh-attack" : ""}" data-index="0">
     ${attacker}
   </div>
   <div class="awbwe-mh-column awbwe-mh-defender">
@@ -802,7 +805,7 @@
             if (!state.defender) syncFromCalculator();
             // Attack 1 is the regular calculator's attacker, so it's always included.
             if (state.attacks[0]) state.attacks[0].enabled = true;
-            let selectingAttacker = calculator.selectorPosition === "attacker" && pendingReplaceIndex === null;
+            let selectingAttacker = calculator.selectorPosition === "attacker" && (pendingAppend || held?.append);
             root.style.left = (state.position?.x ?? 200) + "px";
             root.style.top = (state.position?.y ?? 200) + "px";
             root.style.width = state.width ? state.width + "px" : "";
@@ -956,10 +959,34 @@ ${outcomesHtml}`);
             return state.attacks[parseInt(key.substring(1))];
         }
 
-        root.addEventListener("input", (e) => {
+        // Clicking into a field selects what's in it, so typing replaces the old value rather than inserting into
+        // it (which turns a range such as 8.1-9 into something that no longer parses). Deferred, because the
+        // click itself places the caret after the field gets focus.
+        root.addEventListener("focusin", (e) => {
+            let input = e.target;
+            if (!isOwnTextInput(input)) return;
+            setTimeout(() => {
+                if (document.activeElement === input) input.select();
+            }, 0);
+        });
+
+        // Something on AWBW's game page treats text fields as whole numbers: on a key press it clears a field
+        // holding "9." or "6-", and it fires change events while typing, so decimals and ranges couldn't be
+        // typed. Key and input events from this window's own fields are stopped here, before they reach the
+        // document, and handled directly. (Typing itself is the browser's default action, so it still happens.)
+        for (let type of ["keydown", "keypress", "keyup", "beforeinput", "input"]) {
+            window.addEventListener(type, (e) => {
+                if (!isOwnTextInput(e.target)) return;
+                if (type.startsWith("key") && isSelectionHotkey(e)) return;
+                e.stopPropagation();
+                if (type === "input") onFieldInput(e);
+            }, true);
+        }
+
+        function onFieldInput(e) {
             let field = e.target.dataset?.field;
             let side = e.target.dataset?.key && sideForKey(e.target.dataset.key);
-            if (!field || !side || e.target.type === "checkbox") return;
+            if (!field || !side) return;
             if (field === "hp") {
                 if (e.target.dataset.key === "d") {
                     let parsed = parseDefenderHp(e.target.value);
@@ -978,7 +1005,7 @@ ${outcomesHtml}`);
                 side[field] = parseNumber(e.target.value, 0);
             }
             changed(false);
-        });
+        }
 
         // These update in place rather than re-rendering, so that the click that blurred the input
         // still lands on the element that was clicked.
@@ -990,8 +1017,9 @@ ${outcomesHtml}`);
                 side.enabled = e.target.checked;
                 e.target.closest(".awbwe-mh-attack").classList.toggle("awbwe-mh-disabled", !side.enabled);
                 changed(false);
-            } else {
-                // Show the value that's actually being used once the input loses focus.
+            } else if (document.activeElement !== e.target) {
+                // Show the value that's actually being used once the field loses focus (not while it's being
+                // typed in, in case anything else fires change events).
                 if (field === "hp" && e.target.dataset.key === "d") {
                     e.target.value = formatDefenderHp(side);
                     e.target.classList.toggle("awbwe-mh-hp-range", side.hpMax !== null && side.hpMax !== undefined);
@@ -1034,7 +1062,7 @@ ${outcomesHtml}`);
                 changed(true);
                 break;
             case "select-defender": selectFromMap("defender"); break;
-            case "select-attacker": selectFromMap("attacker"); break;
+            case "select-attacker": selectFromMap("attacker", "append"); break;
             case "reselect": selectFromMap("attacker", index); break;
             case "add": {
                 let last = state.attacks[state.attacks.length - 1];
@@ -1042,13 +1070,11 @@ ${outcomesHtml}`);
                 attack.hpChangeBefore = 0;
                 attack.enabled = true;
                 state.attacks.push(attack);
-                state.activeIndex = state.attacks.length - 1;
                 changed(true);
                 break;
             }
             case "clear":
                 state.attacks = state.attacks.slice(0, 1);
-                state.activeIndex = null;
                 changed(true);
                 break;
             case "swap": {
@@ -1066,9 +1092,7 @@ ${outcomesHtml}`);
                 break;
             }
             case "remove": {
-                let active = activeAttackIndex();
                 state.attacks.splice(index, 1);
-                state.activeIndex = active > index ? active - 1 : Math.min(active, state.attacks.length - 1);
                 changed(true);
                 break;
             }
@@ -1077,28 +1101,17 @@ ${outcomesHtml}`);
                 let other = action === "up" ? index - 1 : index + 1;
                 if (other < 0 || other >= state.attacks.length) break;
                 [state.attacks[index], state.attacks[other]] = [state.attacks[other], state.attacks[index]];
-                state.activeIndex = other;
                 changed(true);
                 break;
             }
             }
         });
 
-        // Clicking anywhere in an attack highlights it as the one A + click replaces.
-        root.addEventListener("mousedown", (e) => {
-            let attackElement = e.target.closest(".awbwe-mh-attack");
-            if (!attackElement) return;
-            state.activeIndex = parseInt(attackElement.dataset.index);
-            saveState();
-            root.querySelectorAll(".awbwe-mh-attack").forEach((element) => {
-                element.classList.toggle("awbwe-mh-active-attack", element === attackElement);
-            });
-        });
-
         // Selection state changes (e.g. finishing a map pick) restyle the [Select] buttons.
         calculator.$watch("selectorPosition", () => {
             if (!calculator.selectorPosition) {
                 pendingReplaceIndex = null;
+                pendingAppend = false;
             }
             if (isMultiVisible()) render();
         });

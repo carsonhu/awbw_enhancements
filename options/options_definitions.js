@@ -49,9 +49,9 @@ let kCheckOptionsMapping = [
             `against one defender to see the chance of destroying it after each attack, the damage range of ` +
             `each attack, and the counterattack each attacker takes.`,
             `Switch modes with the "Multi-hit" / "Simple" buttons in the calculator's title bar, or hold Shift+A ` +
-            `and click units to add them as further attacks against the current defender. While the multi-hit ` +
-            `calculator is open, hold D and click a unit to set the defender, or hold A and click a unit to replace ` +
-            `the highlighted attack. If you don't know the defender's exact HP, type a range such as 4.1-5.`
+            `and click units to add them as further attacks against the current defender. A and D set the ` +
+            `attacker (the first attack) and the defender, the same way they do for the regular calculator. If ` +
+            `you don't know the defender's exact HP, type a range such as 4.1-5.`
         ],
     }, {
         id: "enable-moveplanner-plus",

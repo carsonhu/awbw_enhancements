@@ -57,6 +57,22 @@ body.awbwe-mh-active #calculator {
   width: 36px;
 }
 
+/* Room to see a range such as 9.6-9.8 while typing it. The negative margin keeps the field's place in the
+ * layout (28px wide for an exact HP, 36px for a range), so it overlaps its neighbours instead of wrapping them. */
+#awbwe-multihit input.awbwe-mh-defender-hp:focus {
+  box-sizing: border-box;
+  font-size: 12px;
+  margin-right: -36px;
+  padding: 1px;
+  position: relative;
+  width: 64px;
+  z-index: 10;
+}
+
+#awbwe-multihit input.awbwe-mh-defender-hp.awbwe-mh-hp-range:focus {
+  margin-right: -28px;
+}
+
 #awbwe-multihit input.awbwe-mh-funds {
   width: 52px;
 }
@@ -145,11 +161,6 @@ body.awbwe-mh-active #calculator {
 
 .awbwe-mh-disabled {
   opacity: 0.55;
-}
-
-.awbwe-mh-active-attack {
-  border-color: #0066CC;
-  box-shadow: inset 0 0 0 1px #0066CC;
 }
 
 .awbwe-mh-help {
