@@ -408,6 +408,8 @@ function calculateMultihit(defender, attacks) {
         let next = emptyDistribution();
         let damageStat = makeStat();
         let counterStat = makeStat();
+        // The counter for each displayed HP the defender can strike back at (index 1-10).
+        let counterByHpStats = Array.from({ length: 11 }, makeStat);
         let attackerHpStat = makeStat();
         for (let hp = 0; hp <= 100; hp++) {
             let p = dist[hp];
@@ -425,6 +427,7 @@ function calculateMultihit(defender, attacks) {
                 for (let [dmg, q] of strikeDamageDistribution(counter, displayHp(hp), atkHp)) {
                     let dealt = Math.min(dmg, atkHp * 10);
                     addStat(counterStat, dealt, p * q);
+                    addStat(counterByHpStats[displayHp(hp)], dealt, p * q);
                     let remaining = atkHp * 10 - dealt;
                     attackerHps.set(remaining, (attackerHps.get(remaining) || 0) + q);
                 }
@@ -447,6 +450,7 @@ function calculateMultihit(defender, attacks) {
                         for (let [cdmg, s] of strikeDamageDistribution(counter, displayHp(remaining), atkHp)) {
                             let cdealt = Math.min(cdmg, atkInternal);
                             addStat(counterStat, cdealt, w * s);
+                            addStat(counterByHpStats[displayHp(remaining)], cdealt, w * s);
                             addStat(attackerHpStat, atkInternal - cdealt, w * s);
                         }
                     } else {
@@ -465,6 +469,9 @@ function calculateMultihit(defender, attacks) {
             after: summarizeDistribution(dist),
             damage: finishStat(damageStat),
             counter: finishStat(counterStat),
+            // [{defenderHp (displayed), min, max, mean, probability}] for each HP the defender counters at.
+            counterByHp: counterByHpStats.map((stat, hp) => Object.assign({ defenderHp: hp }, finishStat(stat)))
+                .filter((stat) => stat.probability > 0),
             attackerHp: finishStat(attackerHpStat),
             distribution: Array.from(dist),
         });

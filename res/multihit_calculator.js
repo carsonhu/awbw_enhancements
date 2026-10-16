@@ -809,12 +809,12 @@
             root.innerHTML = `
 <header class="awbwe-mh-titlebar" data-drag="1">
   Multi-hit calculator
-  <span class="awbwe-mh-help" title="${esc(kHelpText)}">?</span>
   <span class="awbwe-mh-switch" data-action="simple" title="Switch to the simple calculator">Simple</span>
+  <span class="awbwe-mh-help" title="${esc(kHelpText)}">?</span>
   <span class="awbwe-mh-close" data-action="close" title="Close">&#10005;</span>
 </header>
+${templateMatchup()}
 <div class="awbwe-mh-body">
-  ${templateMatchup()}
   <div class="awbwe-mh-section-header">
     More attacks
     <span data-action="add" title="Add a copy of the last attack">[Add]</span>
@@ -833,15 +833,31 @@
         // One chip per possible outcome (KO, then each HP that can remain), shaded by its probability.
         // The KO chip only shows when a KO is possible.
         function templateOutcomes(summary) {
-            let chips = [];
-            summary.byDisplayHp.forEach((p, hp) => {
-                if (p <= 0) return;
-                let fill = (Math.min(1, p) * 100).toFixed(1);
-                let label = hp === 0 ? "KO" : hp + " HP";
-                chips.push(`<span class="awbwe-mh-outcome ${hp === 0 ? "awbwe-mh-outcome-ko" : ""}"
-      style="--awbwe-mh-fill: ${fill}%" title="${hp === 0 ? "Destroyed" : hp + " HP left"}: ${formatPercent(p)}">${label} <b>${formatPercent(p)}</b></span>`);
+            return summary.byDisplayHp.map((p, hp) => p > 0 ? templateOutcomeChip(hp, p) : "").join("");
+        }
+
+        function templateOutcomeChip(hp, p) {
+            let fill = (Math.min(1, p) * 100).toFixed(1);
+            let label = hp === 0 ? "KO" : hp + " HP";
+            return `<span class="awbwe-mh-outcome ${hp === 0 ? "awbwe-mh-outcome-ko" : ""}"
+      style="--awbwe-mh-fill: ${fill}%" title="${hp === 0 ? "Destroyed" : hp + " HP left"}: ${formatPercent(p)}">${label} <b>${formatPercent(p)}</b></span>`;
+        }
+
+        function formatCounterRange({ min, max }) {
+            return `${min === max ? min : min + " - " + max}%`;
+        }
+
+        // Under the defender: a row for each HP it can be left at, with the counter it then deals (marked with
+        // the fire icon, like the regular calculator's defender column).
+        function templateOutcomeRows(result) {
+            let counterAt = new Map(result.counterByHp.map((counter) => [counter.defenderHp, counter]));
+            let rows = result.after.byDisplayHp.map((p, hp) => {
+                if (p <= 0) return "";
+                let counter = hp > 0 && counterAt.get(hp);
+                return `${templateOutcomeChip(hp, p)}<span class="awbwe-mh-counter-hp">${counter ? `
+<span title="Counter at ${hp} HP, average ${counter.mean.toFixed(1)}%"><img src="terrain/fire.gif" draggable="false"> ${formatCounterRange(counter)}</span>` : ""}</span>`;
             });
-            return chips.join("");
+            return `<div class="awbwe-mh-outcome-rows" title="Average HP left: ${(result.after.meanHp / 10).toFixed(2)}">${rows.join("")}</div>`;
         }
 
         function renderResults() {
@@ -887,10 +903,11 @@
                 if (!result.canCounter) {
                     counterHtml = `<span class="awbwe-mh-dim">No counter</span>`;
                 } else if (result.counter.min !== null) {
-                    // The KO chip already says when the defender never survives to counter.
-                    let { min, max, mean } = result.counter;
-                    let chance = result.counter.probability < 0.9995 ? ` <span class="awbwe-mh-dim">(${formatPercent(result.counter.probability)} chance)</span>` : "";
-                    counterHtml = `<span title="Average ${mean.toFixed(1)}%">${result.counterFirst ? "Counters first" : "Counter"}: ${min === max ? min : min + " - " + max}%</span>${chance}`;
+                    // Like the regular calculator, the counter at each HP the defender can strike back at, e.g.
+                    // "@2HP 7 - 8%". The KO chip already says when the defender never survives to counter.
+                    let byHp = result.counterByHp.map((counter) => `
+<span class="awbwe-mh-counter-hp" title="At ${counter.defenderHp} HP (${formatPercent(counter.probability)} chance), average ${counter.mean.toFixed(1)}%"><b>@${counter.defenderHp}HP</b> ${formatCounterRange(counter)}</span>`);
+                    counterHtml = `<span class="awbwe-mh-counter"><span class="awbwe-mh-dim">${result.counterFirst ? "Counters first" : "Counter"}</span>${byHp.join("")}</span>`;
                 }
                 let damageHtml = `<span><img src="terrain/fire.gif" draggable="false"> ${formatRange(result.damage, "%")}</span>`;
                 let fundsHtml = `<span title="Average funds damage"><img src="terrain/coin.gif" draggable="false"> ~${Math.round(fundsDamage).toLocaleString()}</span>`;
@@ -901,7 +918,11 @@
                     setHtml("awbwe-mh-result-0", `
 <div class="awbwe-mh-result-line">${damageHtml}</div>
 <div class="awbwe-mh-result-line">${fundsHtml}</div>`);
-                    setHtml("awbwe-mh-counter-0", `${outcomesHtml}<div class="awbwe-mh-result-line">${counterHtml}</div>`);
+                    // Sonja's Counter Break strikes back before the attack, at the defender's HP before it, so
+                    // those counters don't line up with the HP left afterwards and get their own line.
+                    let separateCounter = !result.canCounter || result.counterFirst;
+                    setHtml("awbwe-mh-counter-0", result.counterFirst ? `${outcomesHtml}<div class="awbwe-mh-result-line">${counterHtml}</div>`
+                        : `${templateOutcomeRows(result)}${separateCounter ? `<div class="awbwe-mh-result-line">${counterHtml}</div>` : ""}`);
                 } else {
                     setHtml("awbwe-mh-result-" + index, `
 <div class="awbwe-mh-result-line awbwe-mh-spaced">${damageHtml}${fundsHtml}${counterHtml}</div>

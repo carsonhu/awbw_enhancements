@@ -61,6 +61,8 @@ body.awbwe-mh-active #calculator {
   width: 52px;
 }
 
+/* The regular calculator's title bar (#calculator header, .grab-header and .calculator-help in AWBW's CSS),
+ * with the mode button and help badge at the same places, so the mode button stays put when switching. */
 .awbwe-mh-titlebar {
   align-items: center;
   background: #0066CC;
@@ -68,13 +70,33 @@ body.awbwe-mh-active #calculator {
   color: white;
   cursor: grab;
   display: flex;
+  font-size: 14px;
   font-weight: bold;
-  gap: 6px;
-  padding: 2px 4px;
+  padding: 2px;
+  position: relative;
+}
+
+.awbwe-mh-titlebar .awbwe-mh-switch {
+  font-size: 16px;
+  margin-right: 8px;
+  position: absolute;
+  right: 52px;
 }
 
 .awbwe-mh-titlebar .awbwe-mh-help {
+  font-size: 16px;
+  font-weight: 900;
+  height: 20px;
+  line-height: 20px;
+  position: absolute;
+  right: 32px;
+  width: 20px;
+}
+
+.awbwe-mh-titlebar .awbwe-mh-close {
+  font-size: 16px;
   margin-left: auto;
+  margin-right: 8px;
 }
 
 .awbwe-mh-close {
@@ -361,12 +383,13 @@ body.awbwe-mh-active #calculator {
 }
 
 /* Attack 1 and the defender, side by side like the regular calculator. */
-/* Edge to edge, past the body's side padding, like the regular calculator. */
+/* Edge to edge like the regular calculator, and outside the scrolling body so that a scrollbar can't
+ * narrow it. */
 .awbwe-mh-matchup {
   display: flex;
   font-size: 14px;
   gap: 3px;
-  margin: 3px -3px 0;
+  margin-top: 3px;
 }
 
 .awbwe-mh-column {
@@ -467,6 +490,37 @@ body.awbwe-mh-active #calculator {
 
 .awbwe-mh-attack-settings .awbwe-mh-row-buttons span {
   margin-left: 3px;
+}
+
+/* Under the defender: each HP it can be left at, and the counter it deals at that HP. */
+.awbwe-mh-outcome-rows {
+  align-items: center;
+  column-gap: 6px;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  row-gap: 2px;
+}
+
+.awbwe-mh-outcome-rows .awbwe-mh-counter-hp {
+  text-align: left;
+}
+
+.awbwe-mh-counter-hp img {
+  height: 12px;
+  vertical-align: -1px;
+}
+
+/* "Counter @2HP 7 - 8% @3HP 10 - 12%", wrapping between HPs. */
+.awbwe-mh-counter {
+  column-gap: 6px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: inherit;
+}
+
+.awbwe-mh-counter-hp {
+  white-space: nowrap;
 }
 
 .awbwe-mh-result-line.awbwe-mh-spaced {
