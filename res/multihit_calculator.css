@@ -36,7 +36,8 @@ body.awbwe-mh-active #calculator {
   z-index: 1200;
 }
 
-#awbwe-multihit input[type="text"] {
+/* Not inside attack 1 and the defender, which use the regular calculator's styles. */
+#awbwe-multihit input[type="text"]:not(:where(.awbwe-mh-calc input)) {
   box-sizing: border-box;
   font-size: 12px;
   padding: 1px 2px;
@@ -48,8 +49,12 @@ body.awbwe-mh-active #calculator {
   width: 26px;
 }
 
-#awbwe-multihit .awbwe-mh-side input.awbwe-mh-defender-hp {
-  width: 38px;
+/* Wide enough for a range such as 4.1-5. An exact HP keeps the regular calculator's width. */
+#awbwe-multihit input.awbwe-mh-defender-hp.awbwe-mh-hp-range {
+  box-sizing: border-box;
+  font-size: 12px;
+  padding: 1px;
+  width: 36px;
 }
 
 #awbwe-multihit input.awbwe-mh-funds {
@@ -356,10 +361,12 @@ body.awbwe-mh-active #calculator {
 }
 
 /* Attack 1 and the defender, side by side like the regular calculator. */
+/* Edge to edge, past the body's side padding, like the regular calculator. */
 .awbwe-mh-matchup {
   display: flex;
+  font-size: 14px;
   gap: 3px;
-  margin-top: 3px;
+  margin: 3px -3px 0;
 }
 
 .awbwe-mh-column {
@@ -395,16 +402,17 @@ body.awbwe-mh-active #calculator {
   text-decoration: underline;
 }
 
-.awbwe-mh-column .awbwe-mh-side {
-  justify-content: center;
-  padding: 3px 2px;
+/* Attack 1 and the defender use the regular calculator's markup and stylesheet; this only fits its grey
+ * boxes into the columns, which have their own border. */
+.awbwe-mh-column .calculator-attack,
+.awbwe-mh-column .calculator-defend {
+  border: none;
+  font-size: 14px;
+  margin-top: 0;
+  width: auto;
 }
 
-.awbwe-mh-column .awbwe-mh-side-row {
-  justify-content: center;
-}
-
-/* CO-specific inputs (and attack 1's HP change, when set) under attack 1's grid. */
+/* Attack 1's HP change, when it's set. */
 .awbwe-mh-column > .awbwe-mh-extras {
   font-size: 11px;
   padding: 0 2px 3px;
@@ -415,7 +423,7 @@ body.awbwe-mh-active #calculator {
   border-top: 1px solid #BBBBBB;
   font-size: 12px;
   margin-top: auto;
-  padding: 2px 4px;
+  padding: 4px;
 }
 
 .awbwe-mh-column-result .awbwe-mh-result-line {

@@ -554,10 +554,11 @@
             return isLashScop ? defense * 2 : defense;
         }
 
-        function hpOverlay(hp) {
+        // `className` is "hp-display" inside the regular calculator's markup.
+        function hpOverlay(hp, className = "awbwe-mh-hp-overlay") {
             let display = Math.ceil(hp);
             if (display >= 10 || display <= 0) return "";
-            return `<img class="awbwe-mh-hp-overlay" src="terrain/aw2/${display}.gif" draggable="false">`;
+            return `<img class="${className}" src="terrain/aw2/${display}.gif" draggable="false">`;
         }
 
         function usesAmmo(side) {
@@ -568,6 +569,7 @@
         // calculator's column (attack 1 and the defender).
         function sideControlParts(side, key, isDefender) {
             let co = engine.normalizeCoName(side.co?.co_name);
+            let starsHtml = `<span class="awbwe-mh-stars"><img src="terrain/terrainstar.gif" draggable="false">${stars(side)}</span>`;
             return {
                 co: `
   <img class="awbwe-mh-co" src="${esc(coImage(side.co))}" data-action="co" data-key="${key}" title="${esc(side.co?.co_name)}" draggable="false">`,
@@ -582,8 +584,7 @@
   </label>`,
                 terrain: `
   <span class="awbwe-mh-terrain" data-action="terrain" data-key="${key}" title="${esc(side.terrain?.terrain_name)}">
-    <img src="${esc(tileImage(side.terrain))}" draggable="false">
-    <span class="awbwe-mh-stars"><img src="terrain/terrainstar.gif" draggable="false">${stars(side)}</span>
+    <img src="${esc(tileImage(side.terrain))}" draggable="false">${starsHtml}
   </span>`,
                 powers: `
   <span class="awbwe-mh-powers">
@@ -620,6 +621,71 @@
   <div class="awbwe-mh-side-rows">
     <div class="awbwe-mh-side-row">${p.unit}${p.terrain}${p.hp}${rowEnds?.[0] ?? ""}</div>
     <div class="awbwe-mh-side-row">${p.powers}${p.ammo}${p.towers}${rowEnds?.[1] ?? ""}</div>
+  </div>
+</div>`;
+        }
+
+        // Attack 1 and the defender use the regular calculator's own markup, so that its stylesheet (which AWBW
+        // loads on every page with the calculator) lays them out the same way, with the same sprite sizes.
+        // Classes such as "hp-options" have to stay exactly as they are: AWBW matches them with div[class="..."].
+        function templateCalculatorSide(side, key, isDefender) {
+            let isRange = isDefender && side.hpMax !== null && side.hpMax !== undefined;
+            let hpHtml = isDefender ? `
+        <img src="terrain/hp.gif" data-action="range" data-key="d" class="awbwe-mh-range-toggle ${isRange ? "awbwe-mh-on" : ""}" draggable="false"
+             title="${isRange ? "Click: use an exact HP" : "Click: use the range of HP that shows as this HP"}">
+        <input type="text" class="awbwe-mh-defender-hp ${isRange ? "awbwe-mh-hp-range" : ""}" data-field="hp" data-key="d" value="${esc(formatDefenderHp(side))}"
+               title="HP: exact (e.g. 6.3), or a range like 4.1-5 when you don't know it, with every 0.1 HP step equally likely">` : `
+        <img src="terrain/hp.gif" draggable="false">
+        <input type="text" data-field="hp" data-key="${key}" value="${esc(side.hp)}" title="HP">`;
+            return `
+<div class="${isDefender ? "calculator-defend" : "calculator-attack"} awbwe-mh-calc">
+  <div class="co-options">
+    <div class="co option" data-action="co" data-key="${key}" title="${esc(side.co?.co_name)}">
+      <div class="selected-co"><img class="border co_portrait" src="${esc(coImage(side.co))}" draggable="false"></div>
+    </div>
+  </div>
+  <div class="unit-options">
+    <div class="unit option" data-action="unit" data-key="${key}" title="${esc(side.unit.units_name)}">
+      <div class="selected-unit border awbwe-mh-calc-unit">
+        <img src="${esc(unitImage(side))}" draggable="false">${hpOverlay(side.hpMax ?? side.hp, "hp-display")}
+      </div>
+    </div>
+    <div class="hp-options">${hpHtml}
+    </div>
+  </div>
+  <div class="terrain-options">
+    <div class="terrain option" data-action="terrain" data-key="${key}" title="${esc(side.terrain?.terrain_name)}">
+      <img class="selected-terrain" src="${esc(tileImage(side.terrain))}" draggable="false">
+      <div class="terrain-stars"><img src="terrain/terrainstar.gif" draggable="false"><p>${stars(side)}</p></div>
+    </div>
+  </div>
+  <div class="power-and-ammo-container">
+    <div class="power-options">
+      <div class="option">
+        <img src="terrain/aw2/redstar.gif" data-action="power" data-power="Y" data-key="${key}" class="${side.power === "Y" ? "green-border" : ""}" title="CO Power" draggable="false">
+        <img src="terrain/aw2/bluestar.gif" data-action="power" data-power="S" data-key="${key}" class="${side.power === "S" ? "green-border" : ""}" title="Super CO Power" draggable="false">
+      </div>
+    </div>
+    <div class="ammo-options">
+      <div class="option" style="visibility: ${usesAmmo(side) ? "visible" : "hidden"}">
+        <span class="red-border-strikethru" style="display: ${side.hasAmmo ? "none" : ""}"></span>
+        <img src="terrain/ammo_button.gif" data-action="ammo" data-key="${key}" class="${side.hasAmmo ? "" : "red-border"}" title="Toggle out of ammo" draggable="false">
+      </div>
+    </div>
+  </div>
+  <div class="misc-options">
+    <div class="city-options" title="Owned urban properties (Kindle's High Society)">
+      <img src="terrain/capt.gif" draggable="false">
+      <input type="text" data-field="cities" data-key="${key}" value="${esc(side.cities)}">
+    </div>
+    <div class="tower-options" title="Com towers">
+      <img src="terrain/aw2/commtowericon.gif" draggable="false">
+      <input type="text" data-field="towers" data-key="${key}" value="${esc(side.towers)}">
+    </div>
+    <div class="fund-options" title="Funds (Colin's Power of Money)">
+      <img class="coin" src="terrain/coin.gif" draggable="false">
+      <input type="text" data-field="funds" data-key="${key}" value="${esc(side.funds)}">
+    </div>
   </div>
 </div>`;
         }
@@ -694,18 +760,18 @@
             let selectingNew = calculator.selectorPosition === "attacker" && pendingReplaceIndex === null;
             let selectingDefender = calculator.selectorPosition === "defender";
             // Attack 1's HP change is the same as editing the defender's HP, so it only shows when it's been set.
-            let firstExtras = first ? sideControlParts(first, "a0", false).extras + (parseNumber(first.hpChangeBefore, 0) ? `
+            let firstExtras = first && parseNumber(first.hpChangeBefore, 0) ? `
       <label class="awbwe-mh-field" title="HP change to the defender before this attack. For the first attack, editing the defender's HP does the same thing.">
         HP change
         <input type="text" class="awbwe-mh-small" data-field="hpChangeBefore" data-key="a0" value="${esc(first.hpChangeBefore)}">
-      </label>` : "") : "";
+      </label>` : "";
             let attacker = first ? `
     <div class="awbwe-mh-column-header">
       <span data-action="swap" title="Swap attacker and defender">[Swap]</span>
       <b>Attacker</b>
       <span data-action="reselect" data-index="0" class="${selectingFirst ? "awbwe-mh-selecting" : ""}" title="Replace with a unit from the map (or hold A and click a unit)">[Select]</span>
     </div>
-    ${templateSideGrid(first, "a0", false)}
+    ${templateCalculatorSide(first, "a0", false)}
     ${firstExtras ? `<div class="awbwe-mh-side-row awbwe-mh-extras">${firstExtras}</div>` : ""}
     <div class="awbwe-mh-column-result" id="awbwe-mh-result-0"></div>` : `
     <div class="awbwe-mh-column-header">
@@ -725,7 +791,7 @@
       <b>Defender</b>
       <span data-action="select-defender" class="${selectingDefender ? "awbwe-mh-selecting" : ""}" title="Pick from the map (or hold D and click a unit)">[Select]</span>
     </div>
-    ${templateSideGrid(state.defender, "d", true)}
+    ${templateCalculatorSide(state.defender, "d", true)}
     <div class="awbwe-mh-column-result" id="awbwe-mh-counter-0"></div>
   </div>
 </div>`;
@@ -884,8 +950,9 @@ ${outcomesHtml}`);
                     side.hp = Math.max(1, Math.min(10, Math.round(hp)));
                 }
                 // Keep the HP badge on the sprite in sync without rebuilding the inputs.
-                let unitElement = e.target.closest(".awbwe-mh-side").querySelector(".awbwe-mh-unit");
-                unitElement.innerHTML = `<img src="${esc(unitImage(side))}" draggable="false">${hpOverlay(side.hpMax ?? side.hp)}`;
+                let unitElement = e.target.closest(".awbwe-mh-side, .awbwe-mh-calc").querySelector(".awbwe-mh-unit, .awbwe-mh-calc-unit");
+                let overlayClass = unitElement.classList.contains("selected-unit") ? "hp-display" : undefined;
+                unitElement.innerHTML = `<img src="${esc(unitImage(side))}" draggable="false">${hpOverlay(side.hpMax ?? side.hp, overlayClass)}`;
             } else {
                 side[field] = parseNumber(e.target.value, 0);
             }
@@ -904,7 +971,12 @@ ${outcomesHtml}`);
                 changed(false);
             } else {
                 // Show the value that's actually being used once the input loses focus.
-                e.target.value = field === "hp" && e.target.dataset.key === "d" ? formatDefenderHp(side) : side[field];
+                if (field === "hp" && e.target.dataset.key === "d") {
+                    e.target.value = formatDefenderHp(side);
+                    e.target.classList.toggle("awbwe-mh-hp-range", side.hpMax !== null && side.hpMax !== undefined);
+                } else {
+                    e.target.value = side[field];
+                }
             }
         });
 

@@ -5,6 +5,13 @@ OptionsReader.instance().onOptionsReady((options) => {
     }
     console.log("Multi-hit calculator enabled.");
 
+    // Added here rather than listed in the manifest so that it's read from disk on each page load, like the
+    // scripts below, instead of only when the extension is reloaded.
+    let stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = chrome.runtime.getURL("/res/multihit_calculator.css");
+    (document.head || document.documentElement).appendChild(stylesheet);
+
     // The calculator runs in the page context so it can use AWBW's damage calculator and unit data.
     let pageOptions = {
         options_bindings_multihit_calculator_hotkey: options.options_bindings_multihit_calculator_hotkey,

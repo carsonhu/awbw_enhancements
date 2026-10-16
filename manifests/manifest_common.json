@@ -17,9 +17,6 @@
             "matches": [
                 "https://awbw.amarriner.com/game.php*"
             ],
-            "css": [
-                "res/multihit_calculator.css"
-            ],
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
@@ -46,8 +43,7 @@
                 "https://awbw.amarriner.com/moveplanner.php*"
             ],
             "css": [
-                "res/awbw_enhancements.css",
-                "res/multihit_calculator.css"
+                "res/awbw_enhancements.css"
             ],
             "js": [
                 "vendor/purify.min.js",
