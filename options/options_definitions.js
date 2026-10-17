@@ -246,7 +246,7 @@ let kKeyboardOptionsMapping = [
         name: "options_bindings_planner_panel_hotkey",
         // Used on the game page, where AWBW Advanced Hotkeys may use the same keys.
         gamePage: true,
-        default: [80 /*p*/],
+        default: [79 /*o*/],
         label: "Move Planner Panel",
         description: [
             `Keyboard shortcut to open or close the move planner panel in games and replays.`,
