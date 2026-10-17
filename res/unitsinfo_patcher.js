@@ -176,14 +176,16 @@
 
     // Patch the unitsInfo data structure when units are added to the map.
     let gamemap = document.getElementById("gamemap");
+    // Whether a mutation only added or removed the extension's move range preview tiles.
+    function isRangeTileMutation(mutation) {
+        let nodes = [...mutation.addedNodes, ...mutation.removedNodes];
+        return nodes.length > 0 && nodes.every((node) => node.classList?.contains("awbwenhancements-range-tile"));
+    }
+
     let observer = new MutationObserver((mutations, observer) => {
-        // Ignore cursor-only mutations
-        let isInteresting = false;
-        for (let mutation of mutations) {
-            if (mutation.target.id != "cursor") {
-                isInteresting = true;
-                break;
-            }
+        // Ignore cursor-only mutations and range preview tiles, they can't add units.
+        if (!mutations.some((mutation) => mutation.target.id != "cursor" && !isRangeTileMutation(mutation))) {
+            return;
         }
 
         patchUnitsInfo();

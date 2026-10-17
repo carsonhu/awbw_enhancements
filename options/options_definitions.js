@@ -301,6 +301,7 @@ let kKeyboardOptionsMapping = [
         ],
     }, {
         id: "quick-build-infantry-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_infantry_hotkey",
         default: [81 /*q*/],
         label: "Infantry",
@@ -308,6 +309,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-mech-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_mech_hotkey",
         default: [],
         label: "Mech",
@@ -315,6 +317,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-recon-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_recon_hotkey",
         default: [87 /*w*/],
         label: "Recon",
@@ -322,6 +325,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-tank-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_tank_hotkey",
         default: [82 /*r*/],
         label: "Tank",
@@ -329,6 +333,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-md-tank-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_md_tank_hotkey",
         default: [],
         label: "Md. Tank",
@@ -336,6 +341,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-neotank-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_neotank_hotkey",
         default: [],
         label: "Neotank",
@@ -343,6 +349,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-megatank-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_megatank_hotkey",
         default: [],
         label: "Mega Tank",
@@ -350,6 +357,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-apc-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_apc_hotkey",
         default: [],
         label: "APC",
@@ -357,6 +365,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-artillery-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_artillery_hotkey",
         default: [69 /*e*/],
         label: "Artillery",
@@ -364,6 +373,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-rocket-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_rocket_hotkey",
         default: [],
         label: "Rocket",
@@ -371,6 +381,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-anti-air-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_anti_air_hotkey",
         default: [84 /*t*/],
         label: "Anti-Air",
@@ -378,6 +389,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-missile-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_missile_hotkey",
         default: [],
         label: "Missile",
@@ -385,6 +397,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-piperunner-hotkey",
+        facility: "base",
         name: "options_bindings_quick_build_piperunner_hotkey",
         default: [],
         label: "Piperunner",
@@ -392,6 +405,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-t-copter-hotkey",
+        facility: "airport",
         name: "options_bindings_quick_build_t_copter_hotkey",
         default: [81 /*q*/],
         label: "T-Copter",
@@ -399,6 +413,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-b-copter-hotkey",
+        facility: "airport",
         name: "options_bindings_quick_build_b_copter_hotkey",
         default: [87 /*w*/],
         label: "B-Copter",
@@ -406,6 +421,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-fighter-hotkey",
+        facility: "airport",
         name: "options_bindings_quick_build_fighter_hotkey",
         default: [69 /*e*/],
         label: "Fighter",
@@ -413,6 +429,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-bomber-hotkey",
+        facility: "airport",
         name: "options_bindings_quick_build_bomber_hotkey",
         default: [82 /*r*/],
         label: "Bomber",
@@ -420,6 +437,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-stealth-hotkey",
+        facility: "airport",
         name: "options_bindings_quick_build_stealth_hotkey",
         default: [84 /*t*/],
         label: "Stealth",
@@ -427,6 +445,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-black-boat-hotkey",
+        facility: "port",
         name: "options_bindings_quick_build_black_boat_hotkey",
         default: [81 /*q*/],
         label: "Black Boat",
@@ -434,6 +453,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-lander-hotkey",
+        facility: "port",
         name: "options_bindings_quick_build_lander_hotkey",
         default: [87 /*w*/],
         label: "Lander",
@@ -441,6 +461,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-cruiser-hotkey",
+        facility: "port",
         name: "options_bindings_quick_build_cruiser_hotkey",
         default: [69 /*e*/],
         label: "Cruiser",
@@ -448,6 +469,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-sub-hotkey",
+        facility: "port",
         name: "options_bindings_quick_build_sub_hotkey",
         default: [82 /*r*/],
         label: "Sub",
@@ -455,6 +477,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-battleship-hotkey",
+        facility: "port",
         name: "options_bindings_quick_build_battleship_hotkey",
         default: [84 /*t*/],
         label: "Battleship",
@@ -462,6 +485,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-carrier-hotkey",
+        facility: "port",
         name: "options_bindings_quick_build_carrier_hotkey",
         default: [],
         label: "Carrier",
@@ -469,6 +493,7 @@ let kKeyboardOptionsMapping = [
         description: [],
     }, {
         id: "quick-build-black-bomb-hotkey",
+        facility: "airport",
         name: "options_bindings_quick_build_black_bomb_hotkey",
         default: [],
         label: "Black Bomb",
@@ -490,3 +515,75 @@ let kAllOptionsMapping = kCheckOptionsMapping.concat(kRangeOptionsMapping).conca
 let kOptionDefaults = Object.fromEntries(kAllOptionsMapping.map(
     (optionMapping) => [optionMapping.name, optionMapping.default]));
 
+// Display names for key codes, used by the options page and the moveplanner's Hotkeys window.
+const kNameOverrides = {
+    8: "Backspace",
+    9: "Tab",
+    13: "Enter",
+    16: "Shift",
+    17: "Ctrl",
+    18: "Alt",
+    19: "Pause/Break",
+    20: "Caps Lock",
+    27: "Esc",
+    32: "Spacebar",
+    33: "Page Up",
+    34: "Page Down",
+    35: "End",
+    36: "Home",
+    37: "Left Arrow",
+    38: "Up Arrow",
+    39: "Right Arrow",
+    40: "Down Arrow",
+    45: "Insert",
+    46: "Delete",
+    91: "Left Meta",
+    92: "Right Meta[1]",
+    93: "Right Meta[2]",
+    96: "Num 0",
+    97: "Num 1",
+    98: "Num 2",
+    99: "Num 3",
+    100: "Num 4",
+    101: "Num 5",
+    102: "Num 6",
+    103: "Num 7",
+    104: "Num 8",
+    105: "Num 9",
+    106: "*",
+    107: "+",
+    109: "-",
+    110: ".",
+    112: "F1",
+    113: "F2",
+    114: "F3",
+    115: "F4",
+    116: "F5",
+    117: "F6",
+    118: "F7",
+    119: "F8",
+    120: "F9",
+    121: "F10",
+    122: "F11",
+    123: "F12",
+    144: "Num Lock",
+    145: "Scroll Lock",
+    186: ";",
+    187: "=",
+    188: ",",
+    189: "-",
+    190: ".",
+    191: "/",
+    192: "`",
+    219: "[",
+    220: "\\",
+    221: "]",
+    222: "'",
+};
+function keyCodeToName(keyCode) {
+    keyCode = keyCode + 0;
+    let override = kNameOverrides[keyCode];
+    if (override !== undefined) { return override; }
+    let other = String.fromCharCode(keyCode);
+    return other;
+}

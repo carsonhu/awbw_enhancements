@@ -1,75 +1,3 @@
-const kNameOverrides = {
-    8: "Backspace",
-    9: "Tab",
-    13: "Enter",
-    16: "Shift",
-    17: "Ctrl",
-    18: "Alt",
-    19: "Pause/Break",
-    20: "Caps Lock",
-    27: "Esc",
-    32: "Spacebar",
-    33: "Page Up",
-    34: "Page Down",
-    35: "End",
-    36: "Home",
-    37: "Left Arrow",
-    38: "Up Arrow",
-    39: "Right Arrow",
-    40: "Down Arrow",
-    45: "Insert",
-    46: "Delete",
-    91: "Left Meta",
-    92: "Right Meta[1]",
-    93: "Right Meta[2]",
-    96: "Num 0",
-    97: "Num 1",
-    98: "Num 2",
-    99: "Num 3",
-    100: "Num 4",
-    101: "Num 5",
-    102: "Num 6",
-    103: "Num 7",
-    104: "Num 8",
-    105: "Num 9",
-    106: "*",
-    107: "+",
-    109: "-",
-    110: ".",
-    112: "F1",
-    113: "F2",
-    114: "F3",
-    115: "F4",
-    116: "F5",
-    117: "F6",
-    118: "F7",
-    119: "F8",
-    120: "F9",
-    121: "F10",
-    122: "F11",
-    123: "F12",
-    144: "Num Lock",
-    145: "Scroll Lock",
-    186: ";",
-    187: "=",
-    188: ",",
-    189: "-",
-    190: ".",
-    191: "/",
-    192: "`",
-    219: "[",
-    220: "\\",
-    221: "]",
-    222: "'",
-};
-function keyCodeToName(keyCode) {
-    keyCode = keyCode + 0;
-    let override = kNameOverrides[keyCode];
-    if (override !== undefined) { return override; }
-    let other = String.fromCharCode(keyCode);
-    return other;
-}
-
 class KeybindListener {
     constructor(modalId) {
         this.keybindOptions = [];
@@ -107,7 +35,8 @@ class KeybindListener {
         this.cancelListen();
         currentOption.setKeyCode(event.keyCode);
         for (let keybindOption of this.keybindOptions) {
-            if (keybindOption !== currentOption && keybindOption.keyCode() === event.keyCode) {
+            if (keybindOption !== currentOption && keybindOption.keyCode() === event.keyCode
+                && keybindOption.conflictsWith(currentOption)) {
                 keybindOption.clearKeyCode();
             }
         }
@@ -141,13 +70,20 @@ class KeybindListener {
 }
 
 class KeybindOption {
-    constructor(optionId, name, keybindListener) {
+    constructor(optionId, name, facility, keybindListener) {
         this.optionId = optionId;
         this.name = name;
+        this.facility = facility;
         this.keybindListener = keybindListener;
 
         this.input = document.getElementById(this.optionId);
         this.input.addEventListener("click", (event) => { this.onClick(event); });
+    }
+
+    // Quick build keys only apply while hovering over their own kind of building, so a key can build a
+    // different unit at a base, an airport, and a port. Every other binding conflicts with everything.
+    conflictsWith(other) {
+        return !this.facility || !other.facility || this.facility === other.facility;
     }
 
     keyCode() {
@@ -299,7 +235,7 @@ function initializeKeyboardOptions() {
         let maxBindings = optionMapping.image ? 1 : kMaxKeyboardBindings;
         for (let i = 1; i <= maxBindings; i++) {
             let inputId = optionMapping.id + "-" + i;
-            keybindListener.addKeybindOption(new KeybindOption(inputId, optionMapping.label, keybindListener));
+            keybindListener.addKeybindOption(new KeybindOption(inputId, optionMapping.label, optionMapping.facility, keybindListener));
         }
     }
 }

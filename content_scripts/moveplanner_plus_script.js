@@ -434,15 +434,16 @@ function openMenuFor(entity, menu, topOffset) {
     return menuIsOpenFor(menu, entity, topOffset);
 }
 
-// Opens the unit's menu and runs `action` with it.
+// Opens the unit's menu and runs `action` with it. Returns whether the menu opened.
 function withUnitMenu(unit, action) {
-    if (!isUnit(unit)) return;
+    if (!isUnit(unit)) return false;
     let menu = document.getElementById("options-menu");
-    if (openMenuFor(unit, menu, kUnitMenuTopOffset)) {
-        action(menu);
-    } else {
+    if (!openMenuFor(unit, menu, kUnitMenuTopOffset)) {
         console.warn("[AWBW Enhancements] Quick action: the menu didn't open for", unit.id);
+        return false;
     }
+    action(menu);
+    return true;
 }
 
 // Closes the unit menu the way AWBW does when the player clicks a part of it that isn't an option.
@@ -459,13 +460,18 @@ function clickMenuItem(menu, selector) {
     }
 }
 
+// Returns whether the HP was set.
 function setUnitHp(unit, hp) {
+    let wasSet = false;
     withUnitMenu(unit, (menu) => {
         let hpInput = menu.querySelector("#hp");
-        if (!hpInput) return;
+        let setHpItem = menu.querySelector("#set-hp");
+        if (!hpInput || !setHpItem) return;
         hpInput.value = hp;
-        clickMenuItem(menu, "#set-hp");
+        setHpItem.click();
+        wasSet = true;
     });
+    return wasSet;
 }
 
 // optionIndex 0 converts the building to the unit's army, 1 makes it neutral.
@@ -765,16 +771,8 @@ OptionsReader.instance().onOptionsReady((options) => {
         }
 
         let observer = new MutationObserver((mutations, observer) => {
-            // Ignore cursor-only mutations, they can't affect game state.
-            let isInteresting = false;
-            for (let mutation of mutations) {
-                if (mutation.target.id != "cursor") {
-                    isInteresting = true;
-                    break;
-                }
-            }
-
-            if (isInteresting) {
+            // Ignore cursor movement and the move range preview's tiles, they can't affect game state.
+            if (mutations.some((mutation) => mutation.target.id != "cursor" && !isRangeTileMutation(mutation))) {
                 parser.handleMapUpdate();
             }
         });
@@ -801,6 +799,27 @@ OptionsReader.instance().onOptionsReady((options) => {
         await playersPanel.startFirstTurn();
     });
 });
+
+function hotkeyNames(keyCodes) {
+    let names = keyCodes.map((code) => keyCodeToName(code)).join(" / ");
+    return names === "" ? "-" : names;
+}
+
+// What else on the page already uses `keyCode`, if anything. A quick action bound to one of these keys would
+// never run.
+function reservedHotkeyUse(options, keyCode) {
+    let bound = (option) => (options[option] || []).includes(keyCode);
+    if (keyCode >= 48 && keyCode <= 57) return "setting a unit's HP";
+    if (keyCode === 67) return "the Calculator";
+    if (options.options_enable_multihit_calculator && bound("options_bindings_multihit_calculator_hotkey")) {
+        return "the Multi-hit Calculator";
+    }
+    if (options.options_enable_move_range_preview) {
+        if (bound("options_bindings_hold_quick_move_range_preview")) return "the Quick Move Range preview";
+        if (bound("options_bindings_hold_quick_attack_range_preview")) return "the Quick Attack Range preview";
+    }
+    return null;
+}
 
 function initializeHotkeyReference(options) {
     // Find a place to inject the button. The game controls table seems appropriate.
@@ -926,10 +945,7 @@ function initializeHotkeyReference(options) {
         section.items.forEach(item => {
             let keys = item.default;
             if (item.option && options[item.option]) {
-                // Map key codes to names if possible, or use raw codes
-                keys = options[item.option].map(code => {
-                    return String.fromCharCode(code);
-                }).join(" / ");
+                keys = hotkeyNames(options[item.option]);
             }
             if (keys === "") keys = "-";
 
@@ -970,6 +986,12 @@ function initializeHotkeyReference(options) {
                     keySpan.innerText = "Press key...";
                     keySpan.classList.add("editing");
 
+                    const stopEditing = () => {
+                        keySpan.classList.remove("editing");
+                        document.removeEventListener("keydown", handleKeyDown, true);
+                        document.removeEventListener("click", handleClickOutside, true);
+                    };
+
                     const handleKeyDown = (event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -977,13 +999,18 @@ function initializeHotkeyReference(options) {
                         let newCode = event.keyCode;
                         let newKeys = [];
 
-                        // Prevent assigning 'C' (Calculator)
-                        if (newCode === 67) {
-                            alert("The 'C' key is reserved for the Calculator.");
+                        // Escape cancels the edit (and leaves the window open).
+                        if (newCode === 27) {
                             keySpan.innerText = keySpan.dataset.originalText;
-                            keySpan.classList.remove("editing");
-                            document.removeEventListener("keydown", handleKeyDown, true);
-                            document.removeEventListener("click", handleClickOutside, true);
+                            stopEditing();
+                            return;
+                        }
+
+                        let reservedFor = reservedHotkeyUse(options, newCode);
+                        if (reservedFor) {
+                            alert(`The '${keyCodeToName(newCode)}' key is already used for ${reservedFor}.`);
+                            keySpan.innerText = keySpan.dataset.originalText;
+                            stopEditing();
                             return;
                         }
 
@@ -1022,9 +1049,7 @@ function initializeHotkeyReference(options) {
                                             chrome.storage.sync.set(saveObj);
 
                                             if (uiRefs[checkItem.option]) {
-                                                let displayKeys = filteredKeys.map(code => String.fromCharCode(code)).join("/");
-                                                if (displayKeys === "") displayKeys = "-";
-                                                uiRefs[checkItem.option].innerText = displayKeys;
+                                                uiRefs[checkItem.option].innerText = hotkeyNames(filteredKeys);
                                             }
                                         }
                                     }
@@ -1042,23 +1067,14 @@ function initializeHotkeyReference(options) {
                             console.log("Saved hotkey:", item.label, newKeys);
                         });
 
-                        // Update UI
-                        let displayKeys = newKeys.map(code => String.fromCharCode(code)).join("/");
-                        if (displayKeys === "") displayKeys = "-";
-                        keySpan.innerText = displayKeys;
-                        keySpan.classList.remove("editing");
-
-                        // Remove listener
-                        document.removeEventListener("keydown", handleKeyDown, true);
-                        document.removeEventListener("click", handleClickOutside, true);
+                        keySpan.innerText = hotkeyNames(newKeys);
+                        stopEditing();
                     };
 
                     const handleClickOutside = (event) => {
                         if (event.target !== keySpan) {
                             keySpan.innerText = keySpan.dataset.originalText;
-                            keySpan.classList.remove("editing");
-                            document.removeEventListener("keydown", handleKeyDown, true);
-                            document.removeEventListener("click", handleClickOutside, true);
+                            stopEditing();
                         }
                     };
 
