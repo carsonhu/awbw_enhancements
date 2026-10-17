@@ -17,12 +17,25 @@
             "matches": [
                 "https://awbw.amarriner.com/game.php*"
             ],
+            "css": [
+                "res/planner_panel.css"
+            ],
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
                 "content_scripts/rate_limit_workaround_script.js",
                 "content_scripts/speedy_event_panel_script.js",
-                "content_scripts/multihit_calculator_script.js"
+                "content_scripts/multihit_calculator_script.js",
+                "content_scripts/planner_panel_script.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://awbw.amarriner.com/userinfo.php*"
+            ],
+            "js": [
+                "lib/util.js",
+                "content_scripts/settings_page_script.js"
             ]
         },
         {
@@ -42,6 +55,17 @@
             "matches": [
                 "https://awbw.amarriner.com/moveplanner.php*"
             ],
+            "all_frames": true,
+            "run_at": "document_start",
+            "js": [
+                "content_scripts/embedded_planner_early_script.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://awbw.amarriner.com/moveplanner.php*"
+            ],
+            "all_frames": true,
             "css": [
                 "res/awbw_enhancements.css"
             ],
@@ -62,7 +86,8 @@
                 "lib/savestate_interceptor.js",
                 "lib/savestate_manager.js",
                 "content_scripts/moveplanner_plus_script.js",
-                "content_scripts/multihit_calculator_script.js"
+                "content_scripts/multihit_calculator_script.js",
+                "content_scripts/embedded_planner_script.js"
             ]
         }
     ],
@@ -84,6 +109,7 @@
     },
     "web_accessible_resources": [
         "/res/axios_throttler.js",
+        "/res/game_state_reader.js",
         "/res/multihit_calculator.css",
         "/res/multihit_calculator.js",
         "/res/multihit_engine.js",

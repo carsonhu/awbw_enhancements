@@ -1,0 +1,74 @@
+/* The move planner panel on the game page (content_scripts/planner_panel_script.js). */
+#awbwe-planner-panel {
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  /* The width set on the panel is the planner's, so the border goes outside it: inside it, the planner would
+     overflow by the border's width and scroll. */
+  box-sizing: content-box;
+  background: #fafadd;
+  border: 1px solid #000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+#awbwe-planner-panel.awbwe-rp-open {
+  display: block;
+}
+.awbwe-rp-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  background: #0066cc;
+  color: #fff;
+  font: bold 13px Verdana, Arial, sans-serif;
+}
+.awbwe-rp-title {
+  flex: 1;
+  text-align: left;
+}
+.awbwe-rp-bar button {
+  font: 12px Verdana, Arial, sans-serif;
+  padding: 1px 8px;
+  border: 1px solid #003d7a;
+  border-radius: 3px;
+  background: #f0f0f0;
+  color: #000;
+  cursor: pointer;
+}
+.awbwe-rp-bar button:hover {
+  background: #fff;
+}
+.awbwe-rp-loading {
+  display: none;
+  padding: 40px;
+  font: 14px Verdana, Arial, sans-serif;
+}
+#awbwe-planner-panel.awbwe-rp-is-loading .awbwe-rp-loading {
+  display: block;
+}
+#awbwe-planner-panel iframe {
+  display: block;
+  width: 100%;
+  height: 600px;
+  border: 0;
+}
+/* Hidden (but still loading and measurable) until the planner page has been stripped down. */
+#awbwe-planner-panel.awbwe-rp-is-loading iframe {
+  visibility: hidden;
+  height: 0 !important;
+}
+/* Marks the button as the in-page planner, as opposed to AWBW's own (new tab) Move Planner button. */
+.awbwe-plan-btn .game-tools-bg {
+  position: relative;
+}
+.awbwe-plan-btn .game-tools-bg::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #0066cc;
+  box-shadow: 0 0 0 1px #fff;
+}

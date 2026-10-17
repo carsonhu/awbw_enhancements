@@ -46,6 +46,60 @@ function makeFakePlayerInfo(country, funds, isFirst) {
     };
 }
 
+// In the game page's move planner panel (see planner_panel_script.js), the replay page around it already shows
+// what this page's own player info lacks: usernames, turn order, whose turn it is, and income. Reads them from
+// the replay page's player cards rather than asking AWBW's server for the replay again, as long as the panel shows
+// the turn the replay is on (the planner's turn selector can move it to another). Returns
+// {players, fundsPerProperty}, or null.
+function playersFromEmbeddingPage(ndx) {
+    if (window.top === window) return null;
+    let parentDoc;
+    try {
+        parentDoc = window.parent.document;
+    } catch (e) {
+        return null;
+    }
+    let plannerLink = parentDoc.querySelector(".move-planner-btn a");
+    if (!plannerLink || new URL(plannerLink.href).searchParams.get("ndx") !== String(ndx)) return null;
+
+    let pagePlayers = scrapePlayersInfo();
+    let cards = Array.from(parentDoc.querySelectorAll(".player-overview-container[id^='player']"));
+    let players = [];
+    let cardsById = {};
+    for (let card of cards) {
+        let info = pagePlayers.find((player) => "player" + player.players_id === card.id);
+        if (!info) continue;
+        cardsById[info.players_id] = card;
+        info.users_username = card.querySelector(".player-username a")?.textContent.trim() || undefined;
+        info.players_order = players.length;
+        info.players_eliminated = card.classList.contains("player-overview-eliminated") ? "Y" : "N";
+        info.awbwe_is_current_turn = !!card.querySelector(".current-turn-arrow");
+        players.push(info);
+    }
+    if (players.length === 0 || players.length !== pagePlayers.length) return null;
+
+    // Funds per property, from a player's income and their properties on the replay page's map, both as they are
+    // now (this page's map is the start of the turn, which may have had captures since).
+    let parentProperties = [];
+    try {
+        let parentMap = parentDoc.getElementById("gamemap");
+        if (parentMap) parentProperties = new GameStateParser(parentMap).parseMapEntities().properties;
+    } catch (error) {
+        console.warn("[AWBW Enhancements] Couldn't read the replay page's map for the funding level:", error);
+    }
+    let fundsPerProperty = undefined;
+    for (let player of players) {
+        let income = parseInt(cardsById[player.players_id].querySelector(".player-income")?.textContent);
+        let incomeProperties = parentProperties.filter(
+            (p) => p.country.code === player.countries_code && p.producesIncome()).length;
+        if (income > 0 && incomeProperties > 0) {
+            fundsPerProperty = income / incomeProperties - (player.co_name === "Sasha" ? 100 : 0);
+            break;
+        }
+    }
+    return { players, fundsPerProperty };
+}
+
 async function getInitialPlayerState(options, mapEntities) {
     let propertiesByCountry =
         partitionBy(mapEntities.properties, (property) => property.country.code);
@@ -58,12 +112,24 @@ async function getInitialPlayerState(options, mapEntities) {
     if (urlParams.has("ndx")) {
         let replayId = parseInt(urlParams.get("replays_id"));
         let ndx = parseInt(urlParams.get("ndx"));
-        players = await fetchPlayersInfo(replayId, ndx);
+        let fromPage = playersFromEmbeddingPage(ndx);
+        if (fromPage) {
+            players = fromPage.players;
+            fundsPerProperty = fromPage.fundsPerProperty;
+        } else {
+            try {
+                players = await fetchPlayersInfo(replayId, ndx);
+            } catch (error) {
+                // Carry on with the page's own player info rather than leaving the planner without its panels. It has
+                // the turn's funds and COs, but not usernames or whose turn it is.
+                console.warn("[AWBW Enhancements] Couldn't load the replay's players, using the page's instead:", error);
+            }
+        }
     }
 
     if (players.length !== 0) {
-        let latestPlayer = undefined;
-        let latestPlayerStartTime = 0;
+        let latestPlayer = players.find((player) => player.awbwe_is_current_turn);
+        let latestPlayerStartTime = latestPlayer ? Infinity : 0;
         for (let playerInfo of players) {
             let country = kCountriesByCode[playerInfo.countries_code];
             let startTime = Date.parse(playerInfo.players_turn_start);
@@ -85,11 +151,13 @@ async function getInitialPlayerState(options, mapEntities) {
 
             // If income is set and non-zero, try to infer the funding level
             if (playerInfo.players_income && playerInfo.cities != "?" && !fundsPerProperty) {
-                let properties = propertiesByCountry[playerInfo.countries_code];
+                let properties = propertiesByCountry[playerInfo.countries_code] || [];
                 let incomeProperties = properties.filter((p) => p.producesIncome()).length;
-                fundsPerProperty = playerInfo.players_income / incomeProperties;
-                if (playerInfo.co_name === "Sasha") {
-                    fundsPerProperty -= 100;
+                if (incomeProperties > 0) {
+                    fundsPerProperty = playerInfo.players_income / incomeProperties;
+                    if (playerInfo.co_name === "Sasha") {
+                        fundsPerProperty -= 100;
+                    }
                 }
             }
         }
@@ -710,6 +778,35 @@ function injectRequestedScripts(options, done) {
     }
 }
 
+// --- Loading a board from the game page's move planner panel ---
+//
+// The panel (planner_panel_script.js) can load the board it's showing into this moveplanner, e.g. a replay part way
+// through a turn; embedded_planner_script.js passes it on to loadPlannerState(). That needs the savestate manager,
+// which loads it like restoring a snapshot.
+
+let activeSavestateManager = null;
+
+// Whether a board can be loaded with loadPlannerState().
+function canLoadPlannerState() {
+    return activeSavestateManager !== null;
+}
+
+function loadPlannerState(savestateData) {
+    if (!activeSavestateManager) return false;
+    activeSavestateManager.loadState(savestateData);
+    return true;
+}
+
+// Tells embedded_planner_script.js that the moveplanner's setup is done, once the snapshot it takes at the start
+// (which would get mixed up with a board loaded meanwhile) has been taken.
+async function announcePlannerReady() {
+    if (activeSavestateManager) {
+        await activeSavestateManager.whenIdle();
+    }
+    document.documentElement.dataset.awbwePlannerReady = "true";
+    document.dispatchEvent(new CustomEvent("awbwe-planner-ready"));
+}
+
 OptionsReader.instance().onOptionsReady((options) => {
     injectRequestedStyles(options);
     initializeQuickActions(options);
@@ -717,6 +814,7 @@ OptionsReader.instance().onOptionsReady((options) => {
     injectRequestedScripts(options, async () => {
         if (!options.options_enable_moveplanner_plus) {
             console.log("Moveplanner plus disabled, exiting setup");
+            announcePlannerReady();
             return;
         }
 
@@ -724,6 +822,7 @@ OptionsReader.instance().onOptionsReady((options) => {
         let replayContainer = document.getElementById("replay-container");
         if (!gamemap || !replayContainer) {
             reportError("Failed to find gamemap (", gamemap, ") or replayContainer (", replayContainer, ")");
+            announcePlannerReady();
             return;
         }
 
@@ -768,6 +867,7 @@ OptionsReader.instance().onOptionsReady((options) => {
             let savestateManager = new SavestateManager(controlsTable, baseUrl, savestateInterceptor);
             savestateInterceptor.addOnUploadListener(savestateManager.onSavestateUpload.bind(savestateManager));
             playersPanel.addTurnStartListener(savestateManager.onTurnStart.bind(savestateManager));
+            activeSavestateManager = savestateManager;
         }
 
         let observer = new MutationObserver((mutations, observer) => {
@@ -797,6 +897,7 @@ OptionsReader.instance().onOptionsReady((options) => {
         parser.handleMapUpdate();
 
         await playersPanel.startFirstTurn();
+        announcePlannerReady();
     });
 });
 
@@ -813,6 +914,9 @@ function reservedHotkeyUse(options, keyCode) {
     if (keyCode === 67) return "the Calculator";
     if (options.options_enable_multihit_calculator && bound("options_bindings_multihit_calculator_hotkey")) {
         return "the Multi-hit Calculator";
+    }
+    if (options.options_enable_planner_panel && bound("options_bindings_planner_panel_hotkey")) {
+        return "closing the Move Planner Panel";
     }
     if (options.options_enable_move_range_preview) {
         if (bound("options_bindings_hold_quick_move_range_preview")) return "the Quick Move Range preview";

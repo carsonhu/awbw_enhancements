@@ -54,6 +54,18 @@ let kCheckOptionsMapping = [
             `you don't know the defender's exact HP, type a range such as 4.1-5.`
         ],
     }, {
+        id: "enable-planner-panel",
+        name: "options_enable_planner_panel",
+        default: true,
+        label: "Enable Move Planner Panel",
+        description: [
+            `Adds a "Plan here" button next to the Move Planner button in games and replays. It opens the move ` +
+            `planner in a panel over the game, instead of in a new tab, so you can explore a line and close it to ` +
+            `carry on. In a replay it loads the turn you're looking at; in a game, the game as it is now.`,
+            `In a replay, it shows the board as it is at the moment you're on, part way through the turn. It follows ` +
+            `the replay (or game): reopen it after stepping through the replay and it shows where you are now.`
+        ],
+    }, {
         id: "enable-moveplanner-plus",
         name: "options_enable_moveplanner_plus",
         default: true,
@@ -226,6 +238,14 @@ let kKeyboardOptionsMapping = [
         label: "Multi-hit Calculator",
         description: [
             `Keyboard shortcut to open or close the multi-hit KO calculator.`,
+        ],
+    }, {
+        id: "planner-panel-hotkey",
+        name: "options_bindings_planner_panel_hotkey",
+        default: [80 /*p*/],
+        label: "Move Planner Panel",
+        description: [
+            `Keyboard shortcut to open or close the move planner panel in games and replays.`,
         ],
     }, {
         id: "hold-quick-move-range-preview",

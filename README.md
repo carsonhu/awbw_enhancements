@@ -105,8 +105,19 @@ Adds a multi-hit mode to the damage calculator in games and the move planner (pr
 
 The first attack and the defender are the regular calculator's attacker and defender, laid out the same way; further attacks are listed below them. Hold **Shift+A** and click units to add attacks (this also works from the regular calculator, which switches to multi-hit and keeps the current matchup). **A** and **D** set the attacker (the first attack) and the defender, the same way they do for the regular calculator, including through hotkey scripts such as AWBW Advanced Hotkeys. If you don't know the defender's exact HP (for example, you only know the damage range of an earlier attack, or the unit is Sonja's), type a **range** such as `4.1-5` into its HP, or click the HP icon. Every 0.1 HP step in the range is treated as equally likely. An "HP change before" field on each attack covers mid-turn power damage such as Kindle's Urban Blight. The damage math is based on [kilmefirst's multi-hit KO calculator](https://docs.google.com/spreadsheets/d/18t5FyJHUfuvbRretLZ-fZT3Bh3VtfKiSBX18HmhRQio).
 
+### Move Planner Panel
+Press **P** (or click **Plan here** next to the Move Planner button) in a game or replay to open the move planner in a panel over the game, instead of in a new tab. Press **P** again, **Esc**, or the close button to go back.
+
+- **In a replay**, it shows the board exactly as the replay is showing it, part way through the turn, including units' positions, HP and waited state, captures, funds and CO powers. Step through the replay and reopen the panel, and it shows where you are now.
+- **In a game**, it shows the game as it is now.
+- **Load from here** (or **Reload game**) puts the board back to where the replay or game is, after trying out a line.
+- The panel loads a move planner page only when you move to another turn; following the replay within a turn needs no requests to AWBW.
+- Inside the panel, the arrow keys scroll it rather than changing the turn.
+
+Limitations: in fog games the panel shows every unit (including ones hidden by fog), and units loaded in transports aren't shown. The key and the panel itself can be changed or turned off in the extension's options.
+
 ### Automatic Unit Repair
-Units on properties that provide repairs (Cities, Bases, Ports, Airports) are now automatically repaired at the start of the turn, simulating the actual game mechanics.
+Units on properties that provide repairs (Cities, Bases, Ports, Airports) are now automatically repaired at the start of the turn, like in the game: oldest unit first, and only units whose full repair can be afforded (others are skipped).
 
 ### Bug Fixes
 - **Fixed CO portraits in move planner** - CO portraits were not being displayed in the move planner.
@@ -114,6 +125,8 @@ Units on properties that provide repairs (Cities, Bases, Ports, Airports) are no
 - **Pre-deployed unit HP icons** - Fixed broken HP icon sprites appearing on pre-deployed units with full HP after savestate restore.
 - **Ghost Production Fix** - Fixed a move planner bug where funds were deducted even if a unit wasn't built.
 - **Hachi COP/SCOP Fix** - Hachi's COP and SCOP now correctly reduce unit costs.
+- **Replay move planner panels** - The move planner's player panels, hotkeys and snapshots no longer go missing when AWBW rate limits the request for a replay's players; it retries, and falls back to the page's own player info.
+- **CO portraits for every style** - COs that a portrait style has no portrait for (e.g. Dual Strike COs in the AW2 style) fall back to another style instead of a missing image.
 
 ## Original Features
 

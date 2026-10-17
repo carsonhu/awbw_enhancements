@@ -564,3 +564,36 @@ td.awbwenhancements-two-hit-ko {
 .country-ci+text {
   fill: white;
 }
+/* The move planner inside the game page's planner panel (content_scripts/embedded_planner_early_script.js):
+   just the planner, without the site header, footer, or page title. */
+html.awbwe-embedded,
+html.awbwe-embedded body {
+    height: auto !important;
+    min-height: 0 !important;
+}
+html.awbwe-embedded body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+html.awbwe-embedded #fixed-header-wrapper,
+html.awbwe-embedded .footer-buffer,
+html.awbwe-embedded #game-server-alert-div,
+html.awbwe-embedded #main > .normal_text,
+html.awbwe-embedded #game-header-table-old > tbody > tr:first-child {
+    display: none !important;
+}
+html.awbwe-embedded #outer {
+    margin: 0 !important;
+}
+html.awbwe-embedded #main {
+    box-shadow: none;
+}
+/* The player sidebar normally has a fixed, scrolling 896px height; in the panel it takes the height it needs, so
+   that the panel is as tall as the planner rather than the sidebar. */
+html.awbwe-embedded .awbwenhancements-sidebar-outer-container,
+html.awbwe-embedded .awbwenhancements-sidebar-inner-container {
+    position: static;
+    height: auto;
+    width: auto;
+    overflow: visible;
+}

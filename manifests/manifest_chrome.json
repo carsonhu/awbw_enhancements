@@ -15,6 +15,7 @@
             "matches": ["https://awbw.amarriner.com/*"],
             "resources": [
                 "/res/axios_throttler.js",
+                "/res/game_state_reader.js",
                 "/res/multihit_calculator.css",
                 "/res/multihit_calculator.js",
                 "/res/multihit_engine.js",
