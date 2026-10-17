@@ -17,6 +17,7 @@ OptionsReader.instance().onOptionsReady((options) => {
         options_bindings_multihit_calculator_hotkey: options.options_bindings_multihit_calculator_hotkey,
     };
     let scripts = [
+        "/lib/advanced_hotkeys_compat.js",
         "/res/multihit_engine.js",
         "/res/multihit_calculator.js#" + encodeURIComponent(JSON.stringify(pageOptions)),
     ];

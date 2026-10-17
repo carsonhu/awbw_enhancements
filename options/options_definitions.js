@@ -234,6 +234,8 @@ let kKeyboardOptionsMapping = [
     {
         id: "multihit-calculator-hotkey",
         name: "options_bindings_multihit_calculator_hotkey",
+        // Used on the game page, where AWBW Advanced Hotkeys may use the same keys.
+        gamePage: true,
         default: [75 /*k*/],
         label: "Multi-hit Calculator",
         description: [
@@ -242,6 +244,8 @@ let kKeyboardOptionsMapping = [
     }, {
         id: "planner-panel-hotkey",
         name: "options_bindings_planner_panel_hotkey",
+        // Used on the game page, where AWBW Advanced Hotkeys may use the same keys.
+        gamePage: true,
         default: [80 /*p*/],
         label: "Move Planner Panel",
         description: [

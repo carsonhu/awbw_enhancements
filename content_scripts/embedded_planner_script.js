@@ -66,14 +66,18 @@
 
     OptionsReader.instance().onOptionsReady((options) => {
         let hotkeys = options.options_bindings_planner_panel_hotkey || [];
-        document.addEventListener("keydown", (e) => {
-            if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
+        // AWBW Advanced Hotkeys' "Close Movement Planner" key closes the panel too. (It would close the planner's
+        // tab, which does nothing in a frame.) Captured on the window, since the userscript stops that key on the
+        // document.
+        window.addEventListener("keydown", (e) => {
+            if (e.repeat || e.metaKey) return;
             let target = e.target;
             if (target && (target.isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))) return;
-            if (hotkeys.includes(e.keyCode)) {
+            let ownHotkey = !e.ctrlKey && !e.altKey && hotkeys.includes(e.keyCode);
+            if (ownHotkey || advancedHotkeysActionFor(e) === "closeMovementPlanner") {
                 e.preventDefault();
                 post({ type: "close" });
             }
-        });
+        }, true);
     });
 })();

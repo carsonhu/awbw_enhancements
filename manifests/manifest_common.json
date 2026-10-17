@@ -23,10 +23,12 @@
             "js": [
                 "options/options_definitions.js",
                 "lib/options_reader.js",
+                "lib/advanced_hotkeys_compat.js",
                 "content_scripts/rate_limit_workaround_script.js",
                 "content_scripts/speedy_event_panel_script.js",
                 "content_scripts/multihit_calculator_script.js",
-                "content_scripts/planner_panel_script.js"
+                "content_scripts/planner_panel_script.js",
+                "content_scripts/advanced_hotkeys_script.js"
             ]
         },
         {
@@ -85,6 +87,7 @@
                 "lib/players_panel.js",
                 "lib/savestate_interceptor.js",
                 "lib/savestate_manager.js",
+                "lib/advanced_hotkeys_compat.js",
                 "content_scripts/moveplanner_plus_script.js",
                 "content_scripts/multihit_calculator_script.js",
                 "content_scripts/embedded_planner_script.js"

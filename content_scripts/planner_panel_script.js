@@ -117,7 +117,9 @@ class PlannerPanel {
         });
         window.addEventListener("message", this.onMessage.bind(this));
         window.addEventListener("resize", () => this.position());
-        document.addEventListener("keydown", this.onKeyDown.bind(this));
+        // Captured on the window so that Esc still reaches it when AWBW Advanced Hotkeys, which listens on the
+        // document, stops it there (it binds Esc to closing the chat).
+        window.addEventListener("keydown", this.onKeyDown.bind(this), true);
 
         this.injectGameStateReader();
         this.addButton();
@@ -155,8 +157,11 @@ class PlannerPanel {
         }
     }
 
+    // Keys that AWBW Advanced Hotkeys also uses are left to it, so they aren't mentioned.
     hotkeyHint() {
-        return this.hotkeys.length ? ` (Hotkey: ${this.hotkeys.map((code) => keyCodeToName(code)).join(" / ")})` : "";
+        let bindings = advancedHotkeysBindings();
+        let hotkeys = this.hotkeys.filter((code) => !advancedHotkeysActionForKeyCode(bindings, code));
+        return hotkeys.length ? ` (Hotkey: ${hotkeys.map((code) => keyCodeToName(code)).join(" / ")})` : "";
     }
 
     isReplay() {
@@ -330,7 +335,7 @@ class PlannerPanel {
         if (e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
         let target = e.target;
         if (target && (target.isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))) return;
-        if (this.hotkeys.includes(e.keyCode)) {
+        if (this.hotkeys.includes(e.keyCode) && !advancedHotkeysActionFor(e)) {
             e.preventDefault();
             this.toggle();
         } else if (e.key === "Escape" && this.isOpen()) {

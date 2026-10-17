@@ -105,6 +105,8 @@ Adds a multi-hit mode to the damage calculator in games and the move planner (pr
 
 The first attack and the defender are the regular calculator's attacker and defender, laid out the same way; further attacks are listed below them. Hold **Shift+A** and click units to add attacks (this also works from the regular calculator, which switches to multi-hit and keeps the current matchup). **A** and **D** set the attacker (the first attack) and the defender, the same way they do for the regular calculator, including through hotkey scripts such as AWBW Advanced Hotkeys. If you don't know the defender's exact HP (for example, you only know the damage range of an earlier attack, or the unit is Sonja's), type a **range** such as `4.1-5` into its HP, or click the HP icon. Every 0.1 HP step in the range is treated as equally likely. An "HP change before" field on each attack covers mid-turn power damage such as Kindle's Urban Blight. The damage math is based on [kilmefirst's multi-hit KO calculator](https://docs.google.com/spreadsheets/d/18t5FyJHUfuvbRretLZ-fZT3Bh3VtfKiSBX18HmhRQio).
 
+The regular calculator's own controls (AWBW's **C**, its menu button, or another script's calculator hotkey) always open the regular calculator, and with the multi-hit calculator open they switch to the regular one; **K** switches the other way.
+
 ### Move Planner Panel
 Press **P** (or click **Plan here** next to the Move Planner button) in a game or replay to open the move planner in a panel over the game, instead of in a new tab. Press **P** again, **Esc**, or the close button to go back.
 
@@ -115,6 +117,9 @@ Press **P** (or click **Plan here** next to the Move Planner button) in a game o
 - Inside the panel, the arrow keys scroll it rather than changing the turn.
 
 Limitations: in fog games the panel shows every unit (including ones hidden by fog), and units loaded in transports aren't shown. The key and the panel itself can be changed or turned off in the extension's options.
+
+### AWBW Advanced Hotkeys Compatibility
+The extension works alongside the [AWBW Advanced Hotkeys](https://greasyfork.org/scripts/557553) userscript. On the game page, a key that both use is left to the userscript: for example, its default presets use **P** for Pause, so **P** doesn't open the move planner panel there, and outside the multi-hit calculator **Shift+A** stays its CO Power key. The extension's options page points out these keys (after you've opened a game with the userscript running), so you can pick another key on either side. In the move planner panel, the userscript's Close Movement Planner key closes the panel.
 
 ### Automatic Unit Repair
 Units on properties that provide repairs (Cities, Bases, Ports, Airports) are now automatically repaired at the start of the turn, like in the game: oldest unit first, and only units whose full repair can be afforded (others are skipped).

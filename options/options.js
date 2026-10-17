@@ -218,8 +218,44 @@ function templateKeyboardOption(mapping) {
   <label class="col-sm-3 col-lg-2 col-form-label">${mapping.label}</label>
   ${bindingHtml}
   <div class="form-text">${description}</div>
+  <div class="form-text text-danger" id="${mapping.id}-advanced-hotkeys"></div>
 </div>`;
 }
+
+// AWBW Advanced Hotkeys' bindings, as last seen on the game page (see content_scripts/advanced_hotkeys_script.js).
+let advancedHotkeysBindingsSeen = null;
+
+// Points out game page hotkeys that AWBW Advanced Hotkeys also uses: those keys are left to it.
+function updateAdvancedHotkeysWarnings() {
+    for (let mapping of kKeyboardOptionsMapping) {
+        if (!mapping.gamePage) continue;
+        let warning = document.getElementById(mapping.id + "-advanced-hotkeys");
+        if (!warning) continue;
+        let lines = [];
+        for (let i = 1; i <= kMaxKeyboardBindings; i++) {
+            let keyCode = document.getElementById(mapping.id + "-" + i)?.getAttribute("rawkeycode");
+            let action = keyCode && advancedHotkeysActionForKeyCode(advancedHotkeysBindingsSeen, parseInt(keyCode));
+            if (action) {
+                let key = keyCodeToName(parseInt(keyCode));
+                lines.push(`AWBW Advanced Hotkeys uses ${key} for "${advancedHotkeysActionName(action)}" on the game ` +
+                           `page, so ${key} does nothing there. Pick another key, or change that one in AWBW ` +
+                           `Advanced Hotkeys.`);
+            }
+        }
+        warning.textContent = lines.join(" ");
+    }
+}
+
+chrome.storage.local.get([kAdvancedHotkeysStorageKey], (result) => {
+    advancedHotkeysBindingsSeen = result[kAdvancedHotkeysStorageKey] || null;
+    updateAdvancedHotkeysWarnings();
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "local" && changes[kAdvancedHotkeysStorageKey]) {
+        advancedHotkeysBindingsSeen = changes[kAdvancedHotkeysStorageKey].newValue || null;
+        updateAdvancedHotkeysWarnings();
+    }
+});
 
 function initializeKeyboardOptions() {
     let keybindListener = new KeybindListener("keybinding-modal");
@@ -322,6 +358,7 @@ initializeKeyboardOptions();
 
 chrome.storage.sync.get(kOptionDefaults, (result) => {
     setOptionsOnPage(result);
+    updateAdvancedHotkeysWarnings();
 
     let isFirefox = chrome.runtime.getManifest().browser_specific_settings?.hasOwnProperty("gecko");
     console.log("is firefox:", isFirefox);
@@ -349,6 +386,7 @@ chrome.storage.sync.get(kOptionDefaults, (result) => {
             let parsedOptions = parseOptionsFromPage();
             console.log("Updating options:", parsedOptions);
             chrome.storage.sync.set(parsedOptions);
+            updateAdvancedHotkeysWarnings();
 
             let moveplannerPlusDisabled = !parsedOptions.options_enable_moveplanner_plus;
             for (let childOption of moveplannerPlusChildOptions) {

@@ -22,6 +22,7 @@
         }
     },
     "web_accessible_resources": [
+        "/lib/advanced_hotkeys_compat.js",
         "/res/axios_throttler.js",
         "/res/game_state_reader.js",
         "/res/multihit_calculator.css",

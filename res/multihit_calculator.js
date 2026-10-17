@@ -223,17 +223,27 @@
             }
         }
 
+        // What this calculator last set AWBW's calculator's `toggled` to, until its watcher sees it. Any other change
+        // comes from the regular calculator's controls: AWBW's own hotkey and menu button, or another script's.
+        let ownToggle = null;
+
+        function setToggled(toggled) {
+            if (calculator.toggled !== toggled) {
+                ownToggle = toggled;
+                calculator.toggled = toggled;
+            }
+            calculator.storeCalcInfo("toggled", toggled);
+        }
+
         function openCalculator() {
             if (!sessionStorage.calculator) {
                 sessionStorage.calculator = JSON.stringify({});
             }
-            calculator.toggled = true;
-            calculator.storeCalcInfo("toggled", true);
+            setToggled(true);
         }
 
         function closeCalculator() {
-            calculator.toggled = false;
-            calculator.storeCalcInfo("toggled", false);
+            setToggled(false);
         }
 
         function showMulti() {
@@ -256,8 +266,14 @@
             saveState();
             openCalculator();
             updateVisibility();
-            if (state.position) {
-                moveCalculatorTo(state.position);
+            let position = state.position;
+            if (position) {
+                // If AWBW's calculator was closed, it can only be measured once it's shown again.
+                if (calculatorPagePosition()) {
+                    moveCalculatorTo(position);
+                } else {
+                    calculator.$nextTick(() => moveCalculatorTo(position));
+                }
             }
         }
 
@@ -269,7 +285,16 @@
             }
         }
 
-        calculator.$watch("toggled", () => {
+        calculator.$watch("toggled", (toggled) => {
+            let own = ownToggle === toggled;
+            ownToggle = null;
+            // The regular calculator's controls are for the regular calculator: they open that one, and while the
+            // multi-hit one is open they switch to the regular one instead of closing it.
+            if (!own && state.mode === "multi") {
+                showSimple();
+                addSwitchButton();
+                return;
+            }
             if (calculator.toggled && state.mode === "multi") {
                 syncFromCalculator();
                 saveState();
@@ -438,6 +463,9 @@
                 document.activeElement.blur();
             }
             if (!(e.key.toLowerCase() === "a" && e.shiftKey)) return;
+            // AWBW Advanced Hotkeys uses Shift+A for the CO Power by default; outside the multi-hit calculator, it
+            // keeps whatever it uses Shift+A for.
+            if (!isMultiVisible() && !held && advancedHotkeysActionFor(e)) return;
 
             // Shift+A also works outside the multi-hit calculator: it switches over, keeping the current matchup.
             e.preventDefault();
@@ -1150,6 +1178,8 @@ ${outcomesHtml}`);
             let target = e.target;
             if (target && (target.isContentEditable || /^(input|textarea|select)$/i.test(target.tagName))) return;
             if (!kHotkeys.includes(e.keyCode)) return;
+            // A key that AWBW Advanced Hotkeys also uses is left to it.
+            if (advancedHotkeysActionFor(e)) return;
             e.preventDefault();
             e.stopPropagation();
             toggleFromHotkey();
