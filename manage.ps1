@@ -46,6 +46,8 @@ switch ($Command) {
     "pack-ff" {
         Build-Manifest "ff"
         Zip-Extension "awbw_enhancements_ff.zip"
+        # Put the checked-in Chrome manifest back so the folder still loads unpacked in Chrome
+        Build-Manifest "chrome"
     }
     "clean" {
         if (Test-Path "dist") {

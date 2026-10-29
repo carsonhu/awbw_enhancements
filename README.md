@@ -22,15 +22,13 @@ To use this fork, you'll need to load it as an unpacked extension.
 
 ### Firefox
 
-1. **Download the code:** Clone this repository or download it as a ZIP file and extract it.
-2. **Prepare Manifest:**
-   - Delete or rename the existing `manifest.json` (this is the Chrome version).
-   - Rename `manifest_firefox.json` to `manifest.json`.
-3. **Open Debugging page:** Go to `about:debugging`.
-4. **Load Add-on:** Click "This Firefox", then "Load Temporary Add-on...".
-5. **Select Manifest:** Select the `manifest.json` file you just renamed.
+1. **Download** `awbw_enhancements_ff.zip` from the [latest release](https://github.com/carsonhu/awbw_enhancements/releases/latest). Don't extract it.
+2. **Open** `about:debugging#/runtime/this-firefox` (paste it into the address bar).
+3. **Click** "Load Temporary Add-on..." and select the zip you downloaded.
 
-The extension should now be installed and active.
+That's it. Firefox removes temporary add-ons when it closes, so repeat steps 2 and 3 (with the same zip) after a restart.
+
+Building it yourself instead: from a clone of this repository, run `./manage.ps1 pack-ff` (needs Python) and load `dist/awbw_enhancements_ff.zip` the same way.
 
 ### Development (Firefox)
 
