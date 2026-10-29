@@ -22,6 +22,18 @@ original was taken out except where listed under **Removed**.
 | Other userscripts | — | Works alongside AWBW Advanced Hotkeys |
 | Browsers | Chrome and Firefox (store builds) | Chrome loaded unpacked from this repository; Firefox from a zip on the Releases page |
 
+## 2026-10-29 (2026.10.29.1)
+
+### Changed
+- The move planner's **Undo** button is now next to **Hotkeys** at the top, so the snapshot buttons start with
+  Snapshot again, as before Undo was added.
+
+### Fixed
+- **Multi-hit calculator: DS Olaf in DS snow.** It no longer gives DS Olaf +20% attack in DS snow, which AWBW doesn't
+  do. Checked against game 1751335 (DS Olaf vs DS Jess): all 20 attacks in DS snow, on the turn of his Winter Fury and
+  Jess's turn after it, match DS Olaf's units at their usual attack, and 4 of them couldn't have happened with +20%.
+  AWBW's own calculator already left it out, so the two calculators agree again.
+
 ## 2026-10-29 (2026.10.29.0)
 
 ### Changed
