@@ -150,7 +150,6 @@ function attackBonus(side, unit) {
         else if (!isFoot) bonus -= 10;
         return bonus;
     case "ds_kanbei": return bonus + (p > 0 ? 30 : 20);
-    case "ds_olaf": return bonus + (side.dsSnow ? 20 : 0);
     case "campaign_sturm": return bonus + (p === 2 ? 40 : 30);
     case "aw1_max":
         // Not on any map yet, so unchecked: 150% direct units, and +27% more with the COP.

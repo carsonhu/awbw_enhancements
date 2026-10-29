@@ -181,20 +181,8 @@
                 co: side.co?.co_name, power: side.power, towers: side.towers, funds: side.funds, cities: side.cities,
                 unit: side.unit?.units_name, hp: side.hp, hasAmmo: side.hasAmmo,
                 terrain: { name: side.terrain?.terrain_name, defense: side.terrain?.terrain_defense },
-                coVariant: coVariants.variantForCo(side.co?.co_name), dsSnow: isDsSnow(),
+                coVariant: coVariants.variantForCo(side.co?.co_name),
             };
-        }
-
-        // Whether it's DS snow (DS Olaf's +20% attack). The game page has the weather in gameWeather, the move planner
-        // in weatherCode, and its Clear / Rain / Snow buttons put the one picked on <html data-awbwe-weather>.
-        // Snow is DS snow in a game with GAME_FLAGS__JJ__DS_OLAF; codes 1 and 2 are DS snow's days left.
-        function isDsSnow() {
-            let dsOlafGame = Boolean(Number(window.GAME_FLAGS__JJ__DS_OLAF));
-            let picked = document.documentElement.dataset.awbweWeather;
-            if (picked) return picked === "snow" && dsOlafGame;
-            let code = typeof gameWeather !== "undefined" ? gameWeather?.code
-                : typeof weatherCode !== "undefined" ? weatherCode : "C";
-            return code === "1" || code === "2" || (code === "S" && dsOlafGame);
         }
 
         // ---- Visibility and mode switching ----

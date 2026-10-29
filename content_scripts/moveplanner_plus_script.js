@@ -347,8 +347,6 @@ function createWeatherToggle(parser) {
 
         button.addEventListener("click", () => {
             currentWeather = weather;
-            // For the multi-hit calculator in the page (DS Olaf's attack in DS snow).
-            document.documentElement.dataset.awbweWeather = weather;
             parser.setWeatherOverride(weather);
             updateTileImages(weather);
             updateButtonStates();
