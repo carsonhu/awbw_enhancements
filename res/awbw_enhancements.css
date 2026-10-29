@@ -342,6 +342,11 @@ td.awbwenhancements-two-hit-ko {
   border-color: #666;
 }
 
+.awbwenhancements-hotkey-btn.awbwenhancements-btn-disabled:hover {
+  background: #f0f0f0;
+  border-color: #999;
+}
+
 
 .awbwenhancements-hotkey-modal {
   display: none;

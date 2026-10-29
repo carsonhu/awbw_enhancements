@@ -966,14 +966,15 @@ function initializeHotkeyReference(options) {
         // The container (td) has a fixed width of 220px which matches the select.
         // We need to increase it or set to auto to fit the button.
         container.style.width = "auto";
-        container.appendChild(hotkeyBtn);
+        // Right after the select, ahead of the Undo button that UndoHistory adds here first.
+        gameSelect.after(hotkeyBtn);
     } else {
         // Fallback: Inject it into the controls area (e.g., near the snapshot buttons)
         let controlsTable = document.getElementById("game-controls-table");
         if (controlsTable) {
             let buttonContainer = controlsTable.querySelector("td");
             if (buttonContainer) {
-                buttonContainer.appendChild(hotkeyBtn);
+                buttonContainer.insertBefore(hotkeyBtn, buttonContainer.querySelector("#planner-undo"));
             }
         }
     }

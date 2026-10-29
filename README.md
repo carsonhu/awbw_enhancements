@@ -90,7 +90,7 @@ All hotkeys are fully customizable in the move planner. A "Disable All Quick Act
 This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow. This does not change the visuals much, but it does affect unit movement ranges.
 
 ### Undo
-The move planner has an **Undo** button (or **Ctrl+Z**) that takes back the last change to the board: a move, wait,
+The move planner has an **Undo** button next to **Hotkeys** (or press **Ctrl+Z**) that takes back the last change to the board: a move, wait,
 build, capture, HP change, removed unit, end turn, restored snapshot, and so on, including the funds and CO power in the
 player panels. Press it again to keep going back, up to 100 changes. Pressed while a unit is being moved, it puts the
 unit back where it started. Undo doesn't ask AWBW for anything (on a board with fog, the first undo or restore asks once).
