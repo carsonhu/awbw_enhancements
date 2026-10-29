@@ -38,19 +38,24 @@ function gameFingerprint() {
 }
 
 // A moveplanner savestate (see the moveplanner's saveState() and createLoadedState()) for the game page's board, as
-// read by res/game_state_reader.js. Players' funds, COs, powers and whose turn it is go in the extension's own part
-// of the savestate, for the moveplanner's player panels.
+// read by res/game_state_reader.js. The day, and players' funds, COs, powers and whose turn it is go in the
+// extension's own part of the savestate, for the moveplanner's player panels.
 function plannerStateFromGame(game) {
     let unitsState = {};
     for (let unit of Object.values(game.unitsInfo || {})) {
         // The moveplanner has no way to show units loaded in transports.
         if (!unit || unit.units_carried === "Y") continue;
         let hp = parseFloat(unit.units_hit_points);
+        // The game page doesn't keep units' units_capture up to date (it's 0 for a unit that's capturing, 1 for one
+        // that finished long ago), but a building being captured always has the capturing unit on it: a capture
+        // starts over when that unit leaves.
+        let building = game.buildingsInfo?.[unit.units_x]?.[unit.units_y];
+        let capturing = building && Number(building.buildings_capture) < 20;
         unitsState[unit.units_id] = Object.assign({}, unit, {
             // The moveplanner draws whole HP (the game has e.g. 6.3, shown as 7) and calls waited units "moved".
             units_hit_points: isNaN(hp) ? unit.units_hit_points : Math.min(10, Math.max(1, Math.ceil(hp))),
             moved: unit.units_moved ? 1 : 0,
-            units_capture: unit.units_capture ? 1 : 0,
+            units_capture: capturing ? 1 : 0,
         });
     }
     let panelStates = Object.values(game.playersInfo || {}).map((player) => ({
@@ -63,11 +68,15 @@ function plannerStateFromGame(game) {
             co_power: player.players_co_power_on,
         },
     }));
+    // The day is only in the game page's header ("Day 12"), which replays update too.
+    let day = parseInt(document.querySelector(".game-header-day")?.textContent.match(/Day (\d+)/)?.[1]);
     return {
         buildingsState: game.buildingsInfo,
         fogArray: null,
         unitsState,
-        awbw_enhancements_extras: { states: [{ sourceId: "players_panel", data: { panel_states: panelStates } }] },
+        awbw_enhancements_extras: {
+            states: [{ sourceId: "players_panel", data: { day: day || undefined, panel_states: panelStates } }],
+        },
     };
 }
 
@@ -168,13 +177,14 @@ class PlannerPanel {
         return plannerLinkTurn(this.plannerLink.href) !== null;
     }
 
-    // A "Plan here" button beside AWBW's Move Planner button, in the same style.
+    // A "Plan here" button beside AWBW's Move Planner button, in the same style. The icon goes in a link like AWBW's
+    // does, which sets the line it sits on: without it, the icon sits lower.
     addButton() {
         let button = document.createElement("div");
         button.className = "awbwe-plan-btn game-tools-btn";
         button.style.borderRight = "none";
         button.innerHTML = `
-<div class="game-tools-bg"><img src="terrain/moveplanner.gif" style="margin-top: 7px; vertical-align: middle;"></div>
+<div class="game-tools-bg"><a class="norm2" role="button" style="display: block; height: 100%; cursor: pointer;"><img src="terrain/moveplanner.gif" style="margin-top: 7px; vertical-align: middle;"></a></div>
 <span class="game-tools-btn-text small_text">Plan here${this.hotkeyHint()}</span>`;
         button.addEventListener("click", () => this.toggle());
         let plannerButton = this.plannerLink.closest(".move-planner-btn");
@@ -196,6 +206,9 @@ class PlannerPanel {
     open() {
         this.panel.classList.add("awbwe-rp-open");
         this.position();
+        // The damage calculator starts closed and fresh each time. (A planner page that's loading starts that way.)
+        this.iframe.contentWindow?.postMessage({ source: "awbwe-planner-panel", type: "reset-calculator" },
+                                               window.location.origin);
         if (this.loadedHref === null || this.isStale()) {
             this.load();
         } else {

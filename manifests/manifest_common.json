@@ -24,6 +24,8 @@
                 "options/options_definitions.js",
                 "lib/options_reader.js",
                 "lib/advanced_hotkeys_compat.js",
+                "lib/co_variants.js",
+                "content_scripts/co_variants_script.js",
                 "content_scripts/rate_limit_workaround_script.js",
                 "content_scripts/speedy_event_panel_script.js",
                 "content_scripts/multihit_calculator_script.js",
@@ -74,6 +76,8 @@
             "js": [
                 "vendor/purify.min.js",
                 "lib/util.js",
+                "lib/co_variants.js",
+                "content_scripts/co_variants_script.js",
                 "lib/game_data.js",
                 "options/options_definitions.js",
                 "lib/options_reader.js",
@@ -88,6 +92,7 @@
                 "lib/savestate_interceptor.js",
                 "lib/savestate_manager.js",
                 "lib/advanced_hotkeys_compat.js",
+                "lib/undo_history.js",
                 "content_scripts/moveplanner_plus_script.js",
                 "content_scripts/multihit_calculator_script.js",
                 "content_scripts/embedded_planner_script.js"

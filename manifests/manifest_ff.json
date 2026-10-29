@@ -23,7 +23,10 @@
     },
     "web_accessible_resources": [
         "/lib/advanced_hotkeys_compat.js",
+        "/lib/co_variants.js",
         "/res/axios_throttler.js",
+        "/res/calculator_reset.js",
+        "/res/co_variants_patcher.js",
         "/res/game_state_reader.js",
         "/res/multihit_calculator.css",
         "/res/multihit_calculator.js",

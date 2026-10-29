@@ -44,16 +44,30 @@
     });
     plannerReady.then(() => post({ type: "planner-ready", canLoadState: canLoadPlannerState() }));
 
+    // Closes and resets the damage calculators in the page's own context (res/calculator_reset.js, and
+    // res/multihit_calculator.js for its own).
+    let calculatorReset = document.createElement("script");
+    calculatorReset.src = chrome.runtime.getURL("/res/calculator_reset.js");
+    (document.head || document.documentElement).appendChild(calculatorReset);
+
     window.addEventListener("message", (e) => {
         if (e.source !== window.parent || e.origin !== window.location.origin) return;
         let message = e.data || {};
-        if (message.source !== "awbwe-planner-panel" || message.type !== "load-state") return;
+        if (message.source !== "awbwe-planner-panel") return;
+        if (message.type === "reset-calculator") {
+            // The panel was opened: the calculators start closed and fresh, as on a new planner page.
+            resetEmbeddedCalculatorStorage();
+            document.dispatchEvent(new CustomEvent("awbwe-calculator-reset"));
+            return;
+        }
+        if (message.type !== "load-state") return;
         plannerReady.then(() => {
             let state = message.state;
-            // The day isn't part of the game page's data, but it's this page's turn.
+            // The panel reads the day from the game page. Failing that, it's this page's turn, if the board is from
+            // the turn this page was opened on.
             let day = parseInt((turn || "").match(/Day (\d+)/)?.[1]);
             let players = state.awbw_enhancements_extras?.states?.find((s) => s.sourceId === "players_panel");
-            if (day && players) players.data.day = day;
+            if (day && players && players.data.day === undefined) players.data.day = day;
             let loaded = false;
             try {
                 loaded = loadPlannerState(state);

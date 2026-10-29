@@ -91,6 +91,12 @@ All hotkeys are fully customizable in the move planner. A "Disable All Quick Act
 ### Weather Toggle
 This fork adds a weather toggle to the move planner that allows you to toggle weather between Clear, Rain, and Snow. This does not change the visuals much, but it does affect unit movement ranges.
 
+### Undo
+The move planner has an **Undo** button (or **Ctrl+Z**) that takes back the last change to the board: a move, wait,
+build, capture, HP change, removed unit, end turn, restored snapshot, and so on, including the funds and CO power in the
+player panels. Press it again to keep going back, up to 100 changes. Pressed while a unit is being moved, it puts the
+unit back where it started. Undo doesn't ask AWBW for anything (on a board with fog, the first undo or restore asks once).
+
 ### Tree-based Save/Load Snapshot System
 This fork introduces a robust tree-based system for managing snapshots. You can now:
 - **Save Tree**: Download the entire tree of snapshots to a file.
@@ -117,6 +123,9 @@ Press **O** (or click **Plan here** next to the Move Planner button) in a game o
 - Inside the panel, the arrow keys scroll it rather than changing the turn.
 
 Limitations: in fog games the panel shows every unit (including ones hidden by fog), and units loaded in transports aren't shown. The key and the panel itself can be changed or turned off in the extension's options.
+
+### New CO Versions
+AWBW's new versions of COs (Clone Andy, AW1 Drake, Max, Olaf and Campaign Sturm, and DS Jess, Olaf, Kanbei and Sonja), which some maps use, are shown with their own portraits and power bars, and the multi-hit calculator uses their stats. The extension picks up which versions a game has from its game page, so open the game (or its replay) before opening its move planner in a new tab.
 
 ### AWBW Advanced Hotkeys Compatibility
 The extension works alongside the [AWBW Advanced Hotkeys](https://greasyfork.org/scripts/557553) userscript. On the game page, a key that both use is left to the userscript: for example, if it uses the move planner panel's key, that key doesn't open the panel there, and outside the multi-hit calculator **Shift+A** stays its CO Power key. The extension's options page points out these keys (after you've opened a game with the userscript running), so you can pick another key on either side. In the move planner panel, the userscript's Close Movement Planner key closes the panel.

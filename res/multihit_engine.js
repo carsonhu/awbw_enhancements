@@ -87,6 +87,12 @@ function classifyTerrain(terrainName) {
     };
 }
 
+// The 2026 versions of COs (see lib/co_variants.js) that change damage, by the portrait name a side's `coVariant`
+// has. Checked against AWBW's calculator where a game had them (see the CHANGELOG); the rest follow AWBW's CO cards.
+function coVariant(side) {
+    return side?.coVariant || null;
+}
+
 function powerLevel(power) {
     if (power === "S") return 2;
     if (power === "Y") return 1;
@@ -94,9 +100,10 @@ function powerLevel(power) {
 }
 
 // Returns {good, bad}: the attacker's luck is a uniform roll in [0, good] minus a uniform roll in [0, bad].
-function luckRange(coName, power) {
+function luckRange(coName, power, variant) {
     let co = normalizeCoName(coName);
     let p = powerLevel(power);
+    if (variant === "ds_sonja") return { good: 9, bad: 5 };
     switch (co) {
     case "nell": return { good: [19, 59, 99][p], bad: 0 };
     case "rachel": return { good: p === 1 ? 39 : 9, bad: 0 };
@@ -108,8 +115,8 @@ function luckRange(coName, power) {
 }
 
 // Returns an array of [luckValue, probability].
-function luckDistribution(coName, power) {
-    let { good, bad } = luckRange(coName, power);
+function luckDistribution(coName, power, variant) {
+    let { good, bad } = luckRange(coName, power, variant);
     let counts = new Map();
     for (let g = 0; g <= good; g++) {
         for (let b = 0; b <= bad; b++) {
@@ -136,6 +143,21 @@ function attackBonus(side, unit) {
     let isDirect = !isIndirect;
 
     let bonus = (p > 0 ? 10 : 0) + 10 * towers;
+    switch (coVariant(side)) {
+    case "ds_jess":
+        // Foot soldiers are left at 100%; vehicles get 10% more than regular Jess, with or without powers.
+        if (isVehicle) bonus += [20, 30, 50][p];
+        else if (!isFoot) bonus -= 10;
+        return bonus;
+    case "ds_kanbei": return bonus + (p > 0 ? 30 : 20);
+    case "ds_olaf": return bonus + (side.dsSnow ? 20 : 0);
+    case "campaign_sturm": return bonus + (p === 2 ? 40 : 30);
+    case "aw1_max":
+        // Not on any map yet, so unchecked: 150% direct units, and +27% more with the COP.
+        if (isIndirect) bonus -= 10;
+        else if (!isFoot) bonus += p > 0 ? 77 : 50;
+        return bonus;
+    }
     switch (co) {
     case "andy": if (p === 2) bonus += 10; break;
     case "colin":
@@ -194,6 +216,10 @@ function defenseBonus(side, unit, attackerUnit) {
     let isSea = kSeaUnits.has(unit);
 
     let bonus = p > 0 ? 10 : 0;
+    switch (coVariant(side)) {
+    case "ds_kanbei": return bonus + (p === 2 ? 30 : 20);
+    case "campaign_sturm": return bonus - 20;
+    }
     switch (co) {
     case "drake": if (isSea) bonus += 10; break;
     case "eagle": if (isAir) bonus += p > 0 ? 20 : 10; break;
@@ -209,16 +235,26 @@ function defenseBonus(side, unit, attackerUnit) {
     return bonus;
 }
 
-function defenderTerrainStars(side, unit) {
+// `attackerSide` is optional: DS Sonja's attacks (and counterattacks) take terrain stars away from her targets.
+function defenderTerrainStars(side, unit, attackerSide) {
     if (kAirUnits.has(unit)) return 0;
     let stars = Number(side.terrain?.defense) || 0;
     if (normalizeCoName(side.co) === "lash" && powerLevel(side.power) === 2) stars *= 2;
+    // AW1 Drake's naval units add two stars to their terrain's: 5 in a port.
+    if (coVariant(side) === "aw1_drake" && kSeaUnits.has(unit)) stars += 2;
+    // One star, and three with her SCOP; her COP doesn't take more.
+    if (coVariant(attackerSide) === "ds_sonja") stars = Math.max(0, stars - (powerLevel(attackerSide.power) === 2 ? 3 : 1));
     return stars;
 }
 
+// How much stronger `side`'s counterattacks are. Sonja's SCOP (Counter Break) has her strike first instead, and
+// without the boost: a game replay shows it, though AWBW's own calculator still applies it there.
 function counterMultiplier(side) {
     let co = normalizeCoName(side.co);
-    if (co === "sonja") return 1.5;
+    // DS Sonja's counters aren't stronger; DS Kanbei's SCOP counters do double damage (from his CO card, unchecked).
+    if (coVariant(side) === "ds_sonja") return 1;
+    if (coVariant(side) === "ds_kanbei") return powerLevel(side.power) === 2 ? 2 : 1;
+    if (co === "sonja") return powerLevel(side.power) === 2 ? 1 : 1.5;
     if (co === "kanbei" && powerLevel(side.power) === 2) return 1.5;
     return 1;
 }
@@ -247,24 +283,30 @@ function roundDamage(raw) {
     return Math.max(0, Math.floor(raw + 0.05));
 }
 
-// Precomputes everything about a single attack that doesn't depend on HP or luck.
-function makeStrike(atkSide, atkUnit, atkHasAmmo, defSide, defUnit, multiplier) {
+// Precomputes everything about a single attack that doesn't depend on HP or luck. `counterMultiplier` is for a
+// counterattack by Sonja or Kanbei (see counterMultiplier()).
+function makeStrike(atkSide, atkUnit, atkHasAmmo, defSide, defUnit, counterMultiplier) {
     let base = baseDamage(atkUnit, defUnit, atkHasAmmo);
     if (base === null) return null;
+    let attack = 100 + attackBonus(atkSide, atkUnit);
+    if (counterMultiplier && counterMultiplier !== 1) {
+        // AWBW multiplies only the CO's day-to-day attack; what powers and com towers add comes on top. Kanbei's
+        // SCOP counter is 130% * 1.5 + 20% = 215%, not 150% * 1.5. Luck isn't multiplied either.
+        let dayToDay = 100 + attackBonus(Object.assign({}, atkSide, { power: "N", towers: 0 }), atkUnit);
+        attack = Math.trunc(dayToDay * counterMultiplier + (attack - dayToDay));
+    }
     return {
         base,
-        attack: 100 + attackBonus(atkSide, atkUnit),
+        attack,
         defense: 100 + defenseBonus(defSide, defUnit, atkUnit),
-        stars: defenderTerrainStars(defSide, defUnit),
-        luck: luckDistribution(atkSide.co, atkSide.power),
-        multiplier: multiplier || 1,
+        stars: defenderTerrainStars(defSide, defUnit, atkSide),
+        luck: luckDistribution(atkSide.co, atkSide.power, coVariant(atkSide)),
     };
 }
 
 // Damage (in internal HP / percent) for a strike given displayed HPs and a luck roll.
 function strikeDamage(strike, atkDisplayHp, defDisplayHp, luck) {
-    // Counterattack multipliers (Sonja, Kanbei's SCOP) scale the attack but not luck.
-    let raw = (strike.base * strike.attack / 100 * strike.multiplier + luck) * (atkDisplayHp / 10)
+    let raw = (strike.base * strike.attack / 100 + luck) * (atkDisplayHp / 10)
         * (200 - (strike.defense + strike.stars * defDisplayHp)) / 100;
     return roundDamage(raw);
 }

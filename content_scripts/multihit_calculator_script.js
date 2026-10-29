@@ -18,6 +18,7 @@ OptionsReader.instance().onOptionsReady((options) => {
     };
     let scripts = [
         "/lib/advanced_hotkeys_compat.js",
+        "/lib/co_variants.js",
         "/res/multihit_engine.js",
         "/res/multihit_calculator.js#" + encodeURIComponent(JSON.stringify(pageOptions)),
     ];

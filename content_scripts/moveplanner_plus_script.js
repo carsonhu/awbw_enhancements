@@ -347,6 +347,8 @@ function createWeatherToggle(parser) {
 
         button.addEventListener("click", () => {
             currentWeather = weather;
+            // For the multi-hit calculator in the page (DS Olaf's attack in DS snow).
+            document.documentElement.dataset.awbweWeather = weather;
             parser.setWeatherOverride(weather);
             updateTileImages(weather);
             updateButtonStates();
@@ -405,8 +407,6 @@ function createWeatherToggle(parser) {
     return weatherContainer;
 }
 
-// TODO: support for "undo"
-
 function injectRequestedStyles(options) {
     if (options.options_menu_opacity === 1) {
         return;
@@ -451,6 +451,15 @@ function trackUnitMoves() {
     menu.addEventListener("click", (e) => {
         if (e.target.id === "move") unitBeingMoved = true;
     }, true);
+}
+
+// Ends what AWBW has selected, as a click on the map would: drops a unit being moved where it is, or closes an
+// open menu.
+function clearPlannerSelection() {
+    let gamemap = document.getElementById("gamemap");
+    let selecting = unitBeingMoved || isShown(document.getElementById("options-menu"))
+        || isShown(document.getElementById("build-menu"));
+    if (gamemap && selecting) gamemap.click();
 }
 
 // Drops the unit being moved under the cursor, the same as clicking there.
@@ -782,9 +791,11 @@ function injectRequestedScripts(options, done) {
 //
 // The panel (planner_panel_script.js) can load the board it's showing into this moveplanner, e.g. a replay part way
 // through a turn; embedded_planner_script.js passes it on to loadPlannerState(). That needs the savestate manager,
-// which loads it like restoring a snapshot.
+// which loads it like restoring a snapshot, and starts the snapshots and undo history over from it.
 
 let activeSavestateManager = null;
+let activePlayersPanel = null;
+let activeUndoHistory = null;
 
 // Whether a board can be loaded with loadPlannerState().
 function canLoadPlannerState() {
@@ -794,6 +805,9 @@ function canLoadPlannerState() {
 function loadPlannerState(savestateData) {
     if (!activeSavestateManager) return false;
     activeSavestateManager.loadState(savestateData);
+    // The players panel has the board's day and whose turn it is now.
+    activeSavestateManager.startOver(savestateData, activePlayersPanel.day, activePlayersPanel.currentPlayerName());
+    activeUndoHistory.startOver();
     return true;
 }
 
@@ -830,6 +844,8 @@ OptionsReader.instance().onOptionsReady((options) => {
         let initialMapEntities = parser.parseMapEntities();
         let baseUrl = initialMapEntities.baseUrl || "https://awbw.amarriner.com/terrain/ani/";
         let players = await getInitialPlayerState(options, initialMapEntities);
+        // The 2026 versions of COs in play, for the player panels' portraits and powers (co_variants_script.js).
+        await coVariantsReady;
 
         let profileSettingsReader = await ProfileSettingsReader.instance();
         let playersPanel = new PlayersPanel(replayContainer, baseUrl, profileSettingsReader, players);
@@ -868,6 +884,10 @@ OptionsReader.instance().onOptionsReady((options) => {
             savestateInterceptor.addOnUploadListener(savestateManager.onSavestateUpload.bind(savestateManager));
             playersPanel.addTurnStartListener(savestateManager.onTurnStart.bind(savestateManager));
             activeSavestateManager = savestateManager;
+            activePlayersPanel = playersPanel;
+            activeUndoHistory = new UndoHistory(savestateManager, savestateInterceptor, gamemap,
+                                                playersPanel.playerInfoContainer, () => unitBeingMoved,
+                                                clearPlannerSelection);
         }
 
         let observer = new MutationObserver((mutations, observer) => {
@@ -897,6 +917,8 @@ OptionsReader.instance().onOptionsReady((options) => {
         parser.handleMapUpdate();
 
         await playersPanel.startFirstTurn();
+        // The board undo goes back to at the start.
+        activeUndoHistory?.record();
         announcePlannerReady();
     });
 });
@@ -981,6 +1003,7 @@ function initializeHotkeyReference(options) {
                 { label: "Convert Property (Army)", option: "options_bindings_quick_convert_army_hotkey", default: "V" },
                 { label: "Convert Property (Neutral)", option: "options_bindings_quick_convert_neutral_hotkey", default: "N" },
                 { label: "End Turn", option: "options_bindings_end_turn_hotkey", default: "M" },
+                { label: "Undo", option: null, default: "Ctrl+Z" },
                 { label: "Toggle Calculator", option: null, default: "C" },
                 { label: "Set HP", option: null, default: "0-9" },
             ]

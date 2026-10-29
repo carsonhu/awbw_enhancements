@@ -11,7 +11,9 @@
     })();
 
     const engine = window.AwbwMultihitEngine;
-    if (!engine) {
+    // The 2026 versions of COs in play in this game (lib/co_variants.js).
+    const coVariants = window.AwbwCoVariants;
+    if (!engine || !coVariants) {
         console.log("Multi-hit calculator: damage engine missing! Aborting.");
         return;
     }
@@ -98,13 +100,16 @@
 
         // ---- State ----
 
+        function freshState() {
+            return { mode: "simple", defender: null, attacks: [], position: null, synced: null };
+        }
+
         function loadState() {
             let saved = null;
             try {
                 saved = JSON.parse(sessionStorage.getItem(kStorageKey));
             } catch (e) {}
-            return Object.assign({ mode: "simple", defender: null, attacks: [], position: null, synced: null },
-                                 saved || {});
+            return Object.assign(freshState(), saved || {});
         }
 
         function saveState() {
@@ -176,7 +181,20 @@
                 co: side.co?.co_name, power: side.power, towers: side.towers, funds: side.funds, cities: side.cities,
                 unit: side.unit?.units_name, hp: side.hp, hasAmmo: side.hasAmmo,
                 terrain: { name: side.terrain?.terrain_name, defense: side.terrain?.terrain_defense },
+                coVariant: coVariants.variantForCo(side.co?.co_name), dsSnow: isDsSnow(),
             };
+        }
+
+        // Whether it's DS snow (DS Olaf's +20% attack). The game page has the weather in gameWeather, the move planner
+        // in weatherCode, and its Clear / Rain / Snow buttons put the one picked on <html data-awbwe-weather>.
+        // Snow is DS snow in a game with GAME_FLAGS__JJ__DS_OLAF; codes 1 and 2 are DS snow's days left.
+        function isDsSnow() {
+            let dsOlafGame = Boolean(Number(window.GAME_FLAGS__JJ__DS_OLAF));
+            let picked = document.documentElement.dataset.awbweWeather;
+            if (picked) return picked === "snow" && dsOlafGame;
+            let code = typeof gameWeather !== "undefined" ? gameWeather?.code
+                : typeof weatherCode !== "undefined" ? weatherCode : "C";
+            return code === "1" || code === "2" || (code === "S" && dsOlafGame);
         }
 
         // ---- Visibility and mode switching ----
@@ -302,6 +320,17 @@
             }
             updateVisibility();
             addSwitchButton();
+        });
+
+        // The game page's move planner panel starts the calculators over each time it's opened (see
+        // res/calculator_reset.js, which closes the regular calculator): this one goes back to how it starts, where
+        // it is.
+        document.addEventListener("awbwe-calculator-reset", () => {
+            state = Object.assign(freshState(), { position: state.position, width: state.width });
+            pendingReplaceIndex = null;
+            pendingAppend = false;
+            saveState();
+            updateVisibility();
         });
 
         // A "Multi-hit" button in the regular calculator's header.
@@ -525,7 +554,17 @@
         });
 
         function coImage(co) {
-            return calculator.getCOImage(co);
+            let variant = coVariants.variantForCo(co?.co_name);
+            return variant ? coVariants.variantPortraitUrl(variant) : calculator.getCOImage(co);
+        }
+
+        function coTitle(co) {
+            return coVariants.displayName(co?.co_name);
+        }
+
+        // Hides a power star the side's CO doesn't have in this game (e.g. Clone Andy's SCOP).
+        function powerStyle(side, power) {
+            return coVariants.canUsePower(side.co?.co_name, power) ? "" : ` style="visibility: hidden"`;
         }
 
         function unitImage(side) {
@@ -549,7 +588,7 @@
         }
 
         function pickCo(anchor, side) {
-            openMenu(anchor, calculator.cos.map((co) => ({ src: co.co_image_path, title: co.co_name, value: co })),
+            openMenu(anchor, calculator.cos.map((co) => ({ src: coImage(co), title: coTitle(co), value: co })),
                      (item) => {
                          side.co = { co_name: item.value.co_name, co_id: item.value.co_id };
                          changed(true);
@@ -602,7 +641,7 @@
             let starsHtml = `<span class="awbwe-mh-stars"><img src="terrain/terrainstar.gif" draggable="false">${stars(side)}</span>`;
             return {
                 co: `
-  <img class="awbwe-mh-co" src="${esc(coImage(side.co))}" data-action="co" data-key="${key}" title="${esc(side.co?.co_name)}" draggable="false">`,
+  <img class="awbwe-mh-co" src="${esc(coImage(side.co))}" data-action="co" data-key="${key}" title="${esc(coTitle(side.co))}" draggable="false">`,
                 unit: `
   <span class="awbwe-mh-unit" data-action="unit" data-key="${key}" title="${esc(side.unit.units_name)}">
     <img src="${esc(unitImage(side))}" draggable="false">${hpOverlay(side.hpMax ?? side.hp)}
@@ -618,8 +657,8 @@
   </span>`,
                 powers: `
   <span class="awbwe-mh-powers">
-    <img src="terrain/aw2/redstar.gif" data-action="power" data-power="Y" data-key="${key}" class="${side.power === "Y" ? "awbwe-mh-on" : ""}" title="CO Power" draggable="false">
-    <img src="terrain/aw2/bluestar.gif" data-action="power" data-power="S" data-key="${key}" class="${side.power === "S" ? "awbwe-mh-on" : ""}" title="Super CO Power" draggable="false">
+    <img src="terrain/aw2/redstar.gif" data-action="power" data-power="Y" data-key="${key}" class="${side.power === "Y" ? "awbwe-mh-on" : ""}" title="CO Power" draggable="false"${powerStyle(side, "Y")}>
+    <img src="terrain/aw2/bluestar.gif" data-action="power" data-power="S" data-key="${key}" class="${side.power === "S" ? "awbwe-mh-on" : ""}" title="Super CO Power" draggable="false"${powerStyle(side, "S")}>
   </span>`,
                 ammo: `
   <img src="terrain/ammo_button.gif" data-action="ammo" data-key="${key}" class="awbwe-mh-ammo ${side.hasAmmo ? "" : "awbwe-mh-off"}" style="visibility: ${usesAmmo(side) ? "visible" : "hidden"}" title="Toggle out of ammo" draggable="false">`,
@@ -670,7 +709,7 @@
             return `
 <div class="${isDefender ? "calculator-defend" : "calculator-attack"} awbwe-mh-calc">
   <div class="co-options">
-    <div class="co option" data-action="co" data-key="${key}" title="${esc(side.co?.co_name)}">
+    <div class="co option" data-action="co" data-key="${key}" title="${esc(coTitle(side.co))}">
       <div class="selected-co"><img class="border co_portrait" src="${esc(coImage(side.co))}" draggable="false"></div>
     </div>
   </div>
@@ -692,8 +731,8 @@
   <div class="power-and-ammo-container">
     <div class="power-options">
       <div class="option">
-        <img src="terrain/aw2/redstar.gif" data-action="power" data-power="Y" data-key="${key}" class="${side.power === "Y" ? "green-border" : ""}" title="CO Power" draggable="false">
-        <img src="terrain/aw2/bluestar.gif" data-action="power" data-power="S" data-key="${key}" class="${side.power === "S" ? "green-border" : ""}" title="Super CO Power" draggable="false">
+        <img src="terrain/aw2/redstar.gif" data-action="power" data-power="Y" data-key="${key}" class="${side.power === "Y" ? "green-border" : ""}" title="CO Power" draggable="false"${powerStyle(side, "Y")}>
+        <img src="terrain/aw2/bluestar.gif" data-action="power" data-power="S" data-key="${key}" class="${side.power === "S" ? "green-border" : ""}" title="Super CO Power" draggable="false"${powerStyle(side, "S")}>
       </div>
     </div>
     <div class="ammo-options">

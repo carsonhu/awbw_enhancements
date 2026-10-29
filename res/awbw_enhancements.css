@@ -180,6 +180,15 @@
   filter: brightness(90%);
 }
 
+.awbwenhancements-btn-disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.awbwenhancements-btn-disabled:hover {
+  filter: none;
+}
+
 .awbwenhancements-fixed-btn {
   width: 80px;
   min-width: 0;
