@@ -1,7 +1,7 @@
 ﻿{
     "name": "AWBW Enhancements Plus",
     "description": "Replay keyboard shortcuts and moveplanner enhancements for Advance Wars By Web.",
-    "version": "2026.10.29.1",
+    "version": "2026.10.29.2",
     "icons": {
         "16": "/res/images/fighter_icon16.png",
         "32": "/res/images/fighter_icon32.png",

@@ -20,7 +20,15 @@ original was taken out except where listed under **Removed**.
 | CO versions | — | The 2026 versions of COs (Clone Andy, AW1 Drake, DS Sonja, ...): portraits, powers and damage |
 | Requests to AWBW | Settings page fetched on every planner load | Settings fetched at most once a day; replay panel reads the page instead of refetching |
 | Other userscripts | — | Works alongside AWBW Advanced Hotkeys |
-| Browsers | Chrome and Firefox (store builds) | Chrome loaded unpacked from this repository; Firefox from a zip on the Releases page |
+| Browsers | Chrome and Firefox (store builds) | Chrome loaded unpacked from this repository; Firefox from a Mozilla-signed .xpi on the Releases page, which updates itself |
+
+## 2026-10-29 (2026.10.29.2)
+
+### Changed
+- **Firefox installs for good.** Releases have `awbw_enhancements_ff.xpi`, signed by Mozilla as a self-distributed
+  add-on: open it in Firefox and click Add, and it stays installed through restarts (the zip loaded from
+  about:debugging was removed each time Firefox closed). Firefox also updates it by itself from `updates.json`.
+  `./manage.ps1 sign-ff` makes the signed file (see docs/DISTRIBUTION.md).
 
 ## 2026-10-29 (2026.10.29.1)
 

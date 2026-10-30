@@ -13,6 +13,7 @@
     "browser_specific_settings": {
         "gecko": {
             "id": "{fb407091-b28b-4b0d-995c-0c69c516ab7f}",
+            "update_url": "https://raw.githubusercontent.com/carsonhu/awbw_enhancements/main/updates.json",
             "data_collection_permissions": {
                 "required": [
                     "none"

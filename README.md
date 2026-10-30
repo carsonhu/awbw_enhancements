@@ -22,13 +22,12 @@ To use this fork, you'll need to load it as an unpacked extension.
 
 ### Firefox
 
-1. **Download** `awbw_enhancements_ff.zip` from the [latest release](https://github.com/carsonhu/awbw_enhancements/releases/latest). Don't extract it.
-2. **Open** `about:debugging#/runtime/this-firefox` (paste it into the address bar).
-3. **Click** "Load Temporary Add-on..." and select the zip you downloaded.
+1. **Open** [awbw_enhancements_ff.xpi](https://github.com/carsonhu/awbw_enhancements/releases/latest/download/awbw_enhancements_ff.xpi) in Firefox (or download it and drag it into a Firefox window).
+2. **Click** "Add" when Firefox asks.
 
-That's it. Firefox removes temporary add-ons when it closes, so repeat steps 2 and 3 (with the same zip) after a restart.
+That's it. It stays installed, and Firefox updates it by itself when a new version comes out. (It's signed by Mozilla but not listed on Firefox's add-ons site, so Firefox may first say it was blocked from installing; click "Continue to Installation".)
 
-Building it yourself instead: from a clone of this repository, run `./manage.ps1 pack-ff` (needs Python) and load `dist/awbw_enhancements_ff.zip` the same way.
+Building it yourself instead: from a clone of this repository, run `./manage.ps1 pack-ff` (needs Python), open `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on..." and pick `dist/awbw_enhancements_ff.zip`. A temporary add-on is removed when Firefox closes.
 
 ### Development (Firefox)
 

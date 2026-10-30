@@ -1,0 +1,12 @@
+{
+    "addons": {
+        "{fb407091-b28b-4b0d-995c-0c69c516ab7f}": {
+            "updates": [
+                {
+                    "version": "2026.10.29.2",
+                    "update_link": "https://github.com/carsonhu/awbw_enhancements/releases/download/2026.10.29.2/awbw_enhancements_ff.xpi"
+                }
+            ]
+        }
+    }
+}
