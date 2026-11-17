@@ -8,17 +8,17 @@
 
 The original extension can be installed for Chrome and Microsoft Edge (and other Chromium-based browsers) [here](https://chrome.google.com/webstore/detail/awbw-helper/cnkhdcnafdfffpkbbbeghbdjkabhbkfi) and for Firefox [here](https://addons.mozilla.org/en-US/firefox/addon/awbw-enhancements/).
 
-To use this fork, you'll need to load it as an unpacked extension.
-
 > **⚠️ Important:** If you have the original AWBW Enhancements extension installed, you must **disable or remove it first** to avoid conflicts.
 
 ### Chrome / Edge / Brave (Chromium)
 
-1. **Download the code:** Clone this repository or download it as a ZIP file and extract it.
-2. **Open Extensions page:** Go to `chrome://extensions` (or `edge://extensions`).
-3. **Enable Developer Mode:** Toggle the "Developer mode" switch.
-4. **Load Unpacked:** Click "Load unpacked".
-5. **Select Folder:** Select the folder containing `manifest.json`.
+1. **Download** [awbw_enhancements_chrome.zip](https://github.com/carsonhu/awbw_enhancements/releases/latest/download/awbw_enhancements_chrome.zip) and unzip it (on Windows: right-click it → "Extract All...").
+2. **Open** `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode** (top right).
+3. **Click** "Load unpacked" and pick the unzipped `awbw_enhancements_chrome` folder.
+
+Keep that folder where it is: Chrome runs the extension from it. To update, download the new zip, unzip it over the old folder, and click the reload arrow on the extension's card in `chrome://extensions`. Your options and snapshots are kept.
+
+Running it from a clone of this repository works the same way: pick the repository folder in step 3.
 
 ### Firefox
 
@@ -100,6 +100,8 @@ This fork introduces a robust tree-based system for managing snapshots. You can 
 - **Load Tree**: Load a previously saved tree to resume analysis.
 - **Branching**: Create multiple branches of play to explore different strategies.
 
+![The move planner with a branching snapshot tree, Hotkeys and Undo buttons, and the weather toggle](docs/images/move_planner_snapshots.png)
+
 ### Multi-hit KO Calculator
 Adds a multi-hit mode to the damage calculator in games and the move planner (press **K**, or click **Multi-hit** in the calculator's title bar). Chain several attacks against one defender to see:
 - The chance of destroying the defender after each attack, with the luck of earlier attacks carried forward.
@@ -107,6 +109,8 @@ Adds a multi-hit mode to the damage calculator in games and the move planner (pr
 - The counterattack each attacker takes.
 
 The first attack and the defender are the regular calculator's attacker and defender, laid out the same way; further attacks are listed below them. Hold **Shift+A** and click units to add attacks (this also works from the regular calculator, which switches to multi-hit and keeps the current matchup). **A** and **D** set the attacker (the first attack) and the defender, the same way they do for the regular calculator, including through hotkey scripts such as AWBW Advanced Hotkeys. If you don't know the defender's exact HP (for example, you only know the damage range of an earlier attack, or the unit is Sonja's), type a **range** such as `4.1-5` into its HP, or click the HP icon. Every 0.1 HP step in the range is treated as equally likely. An "HP change before" field on each attack covers mid-turn power damage such as Kindle's Urban Blight. The damage math is based on [kilmefirst's multi-hit KO calculator](https://docs.google.com/spreadsheets/d/18t5FyJHUfuvbRretLZ-fZT3Bh3VtfKiSBX18HmhRQio).
+
+![The multi-hit calculator: three attacks against an infantry on a city, 84.1% chance to destroy](docs/images/multihit_calculator.png)
 
 The regular calculator's own controls (AWBW's **C**, its menu button, or another script's calculator hotkey) always open the regular calculator, and with the multi-hit calculator open they switch to the regular one; **K** switches the other way.
 

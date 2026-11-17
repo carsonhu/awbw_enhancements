@@ -43,6 +43,13 @@ switch ($Command) {
         Write-Host "Starting web-ext..."
         npx web-ext run
     }
+    "pack-chrome" {
+        # One zip for both the Chrome Web Store upload and the GitHub release (unzip, then "Load unpacked").
+        # manifest.json sits at the zip's root, which the store requires.
+        Build-Manifest "chrome"
+        Zip-Extension "awbw_enhancements_chrome.zip"
+        Write-Host "Upload dist/awbw_enhancements_chrome.zip to the Chrome Web Store and attach it to the GitHub release."
+    }
     "pack-ff" {
         Build-Manifest "ff"
         Zip-Extension "awbw_enhancements_ff.zip"
@@ -108,6 +115,7 @@ switch ($Command) {
         Write-Host "Usage: ./manage.ps1 <command>"
         Write-Host "Commands:"
         Write-Host "  chrome   - Build manifest for Chrome"
+        Write-Host "  pack-chrome - Pack for the Chrome Web Store and the GitHub release"
         Write-Host "  ff       - Build manifest for Firefox"
         Write-Host "  run-ff   - Run in Firefox (requires npx)"
         Write-Host "  pack-ff  - Pack for Firefox distribution"

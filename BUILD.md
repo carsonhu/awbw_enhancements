@@ -31,6 +31,12 @@ This document explains how to build the AWBW Enhancements extension from source.
    - Click "Load unpacked"
    - Select this directory
 
+3. **Package it** for the Chrome Web Store and the GitHub release:
+   ```powershell
+   ./manage.ps1 pack-chrome
+   ```
+   This writes `dist/awbw_enhancements_chrome.zip`. See [docs/CHROME_WEB_STORE.md](docs/CHROME_WEB_STORE.md) for publishing it.
+
 ## Development (Firefox)
 
 To run the extension in a persistent Firefox instance during development:
