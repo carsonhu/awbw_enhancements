@@ -100,6 +100,24 @@ function playersFromEmbeddingPage(ndx) {
     return { players, fundsPerProperty };
 }
 
+// The planner's map id, from the URL or the page's Map ID box, or undefined.
+function getPlannerMapsId() {
+    let fromUrl = parseInt(new URLSearchParams(window.location.search).get("maps_id"));
+    if (!isNaN(fromUrl)) return fromUrl;
+    let fromInput = parseInt(document.querySelector("input[name=maps_id]")?.value);
+    return isNaN(fromInput) ? undefined : fromInput;
+}
+
+// Funding for a planner opened from a map rather than a game: 2000 on a High Funds map, else the option's value.
+async function defaultFundingForMap(options) {
+    let mapsId = getPlannerMapsId();
+    if (mapsId !== undefined && await isHighFundsMap(mapsId)) {
+        console.log("[AWBW Enhancements] High Funds map, funding", kHighFundsFunding);
+        return kHighFundsFunding;
+    }
+    return options.options_default_funding;
+}
+
 async function getInitialPlayerState(options, mapEntities) {
     let propertiesByCountry =
         partitionBy(mapEntities.properties, (property) => property.country.code);
@@ -172,7 +190,7 @@ async function getInitialPlayerState(options, mapEntities) {
         }
     } else {
         // If there's no player data, fabricate some based on the predeployed properties.
-        fundsPerProperty = options.options_default_funding;;
+        fundsPerProperty = await defaultFundingForMap(options);
 
         let isFirst = true;
         for (let country of kCountries) {
@@ -509,11 +527,21 @@ function openMenuFor(entity, menu, topOffset) {
     return menuIsOpenFor(menu, entity, topOffset);
 }
 
-// Opens the unit's menu and runs `action` with it. Returns whether the menu opened.
-function withUnitMenu(unit, action) {
+// Opens the unit's menu and runs `action` with it. Returns whether the menu opened. Opening the menu makes AWBW ask
+// its server for the building conversion options, so only `needsBuildingInfo` lets that request go
+// (see res/moveplanner_menu_hook.js).
+function withUnitMenu(unit, action, needsBuildingInfo = false) {
     if (!isUnit(unit)) return false;
     let menu = document.getElementById("options-menu");
-    if (!openMenuFor(unit, menu, kUnitMenuTopOffset)) {
+    let root = document.documentElement;
+    if (!needsBuildingInfo) root.dataset.awbweSkipBuildingInfo = "";
+    let opened;
+    try {
+        opened = openMenuFor(unit, menu, kUnitMenuTopOffset);
+    } finally {
+        delete root.dataset.awbweSkipBuildingInfo;
+    }
+    if (!opened) {
         console.warn("[AWBW Enhancements] Quick action: the menu didn't open for", unit.id);
         return false;
     }
@@ -591,7 +619,7 @@ function convertBuilding(unit, optionIndex) {
             console.warn("[AWBW Enhancements] Quick convert: timed out waiting for the building's options");
             if (menuIsOpenFor(menu, unit, kUnitMenuTopOffset)) closeUnitMenu(menu);
         }, kBuildingInfoTimeoutMs);
-    });
+    }, true);
 }
 
 function buildUnit(building, unitName) {

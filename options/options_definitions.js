@@ -212,7 +212,7 @@ let kRangeOptionsMapping = [
         label: "Default Funding",
         description: [
             `The default funding level when opening the moveplanner from a map preview rather than an ` +
-            `ongoing game.`
+            `ongoing game. Maps in AWBW's High Funds category always start at 2000.`
         ],
     }, {
         id: "menu-background-alpha-range",

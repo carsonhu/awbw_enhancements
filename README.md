@@ -131,6 +131,11 @@ AWBW's new versions of COs (Clone Andy, AW1 Drake, Max, Olaf and Campaign Sturm,
 ### AWBW Advanced Hotkeys Compatibility
 The extension works alongside the [AWBW Advanced Hotkeys](https://greasyfork.org/scripts/557553) userscript. On the game page, a key that both use is left to the userscript: for example, if it uses the move planner panel's key, that key doesn't open the panel there, and outside the multi-hit calculator **Shift+A** stays its CO Power key. The extension's options page points out these keys (after you've opened a game with the userscript running), so you can pick another key on either side. In the move planner panel, the userscript's Close Movement Planner key closes the panel.
 
+### High Funds Maps
+Opening the move planner from a map in AWBW's **High Funds** category sets the funds per property to 2000 instead of the
+"Default Funding" option's value. The extension learns a map's categories from its map page, so opening the planner from
+there needs no extra request; opening the planner for a map whose page you haven't visited asks AWBW for that page once.
+
 ### Automatic Unit Repair
 Units on properties that provide repairs (Cities, Bases, Ports, Airports) are now automatically repaired at the start of the turn, like in the game: oldest unit first, and only units whose full repair can be afforded (others are skipped).
 

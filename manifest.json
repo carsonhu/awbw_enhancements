@@ -44,6 +44,15 @@
         },
         {
             "matches": [
+                "https://awbw.amarriner.com/prevmaps.php*"
+            ],
+            "js": [
+                "lib/map_categories.js",
+                "content_scripts/map_page_script.js"
+            ]
+        },
+        {
+            "matches": [
                 "https://awbw.amarriner.com/damage.php"
             ],
             "css": [
@@ -93,6 +102,7 @@
                 "lib/savestate_manager.js",
                 "lib/advanced_hotkeys_compat.js",
                 "lib/undo_history.js",
+                "lib/map_categories.js",
                 "content_scripts/moveplanner_plus_script.js",
                 "content_scripts/multihit_calculator_script.js",
                 "content_scripts/embedded_planner_script.js"
