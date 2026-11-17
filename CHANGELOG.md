@@ -22,7 +22,7 @@ original was taken out except where listed under **Removed**.
 | Other userscripts | — | Works alongside AWBW Advanced Hotkeys |
 | Browsers | Chrome and Firefox (store builds) | Chrome loaded unpacked from this repository; Firefox from a Mozilla-signed .xpi on the Releases page, which updates itself |
 
-## Unreleased
+## 2026-11-16 (2026.11.16.0)
 
 ### Added
 
