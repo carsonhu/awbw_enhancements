@@ -447,7 +447,10 @@ function calculateMultihit(defender, attacks) {
             : null;
 
         let next = emptyDistribution();
+        // The attack's roll, like AWBW's calculator shows it (not capped by the HP the defender has left), and
+        // the damage it actually deals (capped).
         let damageStat = makeStat();
+        let dealtStat = makeStat();
         let counterStat = makeStat();
         // The counter for each displayed HP the defender can strike back at (index 1-10).
         let counterByHpStats = Array.from({ length: 11 }, makeStat);
@@ -484,7 +487,8 @@ function calculateMultihit(defender, attacks) {
                     let w = p * q * r;
                     let dealt = Math.min(dmg, hp);
                     let remaining = hp - dealt;
-                    addStat(damageStat, dealt, w);
+                    addStat(damageStat, dmg, w);
+                    addStat(dealtStat, dealt, w);
                     next[remaining] += w;
 
                     if (counter && !counterFirst && remaining > 0) {
@@ -509,6 +513,7 @@ function calculateMultihit(defender, attacks) {
             before,
             after: summarizeDistribution(dist),
             damage: finishStat(damageStat),
+            damageDealt: finishStat(dealtStat),
             counter: finishStat(counterStat),
             // [{defenderHp (displayed), min, max, mean, probability}] for each HP the defender counters at.
             counterByHp: counterByHpStats.map((stat, hp) => Object.assign({ defenderHp: hp }, finishStat(stat)))

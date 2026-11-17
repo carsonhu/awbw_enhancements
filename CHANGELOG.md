@@ -22,6 +22,14 @@ original was taken out except where listed under **Removed**.
 | Other userscripts | — | Works alongside AWBW Advanced Hotkeys |
 | Browsers | Chrome and Firefox (store builds) | Chrome loaded unpacked from this repository; Firefox from a Mozilla-signed .xpi on the Releases page, which updates itself |
 
+## Unreleased
+
+### Fixed
+
+- The multi-hit calculator's damage range for a later attack showed the damage it could deal to what the defender had
+  left, not the attack's roll, so it didn't change when you turned a power on (the chance to destroy did). It now shows
+  the roll, like AWBW's calculator, while the chance to destroy still counts only the HP the defender has left.
+
 ## 2026-10-29 (2026.10.29.2)
 
 ### Changed
