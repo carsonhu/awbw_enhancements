@@ -598,6 +598,8 @@ html.awbwe-embedded #game-header-table-old > tbody > tr:first-child {
 }
 html.awbwe-embedded #outer {
     margin: 0 !important;
+    /* Light blue instead of the site's beige, so the panel doesn't read as the game page behind it. */
+    background-color: #e6eef8 !important;
 }
 html.awbwe-embedded #main {
     box-shadow: none;

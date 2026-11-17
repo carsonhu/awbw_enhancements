@@ -6,7 +6,7 @@
   /* The width set on the panel is the planner's, so the border goes outside it: inside it, the planner would
      overflow by the border's width and scroll. */
   box-sizing: content-box;
-  background: #fafadd;
+  background: #e6eef8;  /* matches the planner's background inside it (res/awbw_enhancements.css) */
   border: 1px solid #000;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
