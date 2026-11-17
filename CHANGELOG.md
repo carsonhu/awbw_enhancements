@@ -24,6 +24,20 @@ original was taken out except where listed under **Removed**.
 
 ## Unreleased
 
+### Added
+
+- Opening the move planner from a map in the High Funds category sets funding to 2000 per property, instead of the
+  Default Funding option. The map's categories come from its map page (no request when opened from there; one request,
+  then kept, for a map whose page hasn't been visited).
+
+### Changed
+
+- The move planner panel (O) has a light blue background instead of the site's beige, so it's clear you're in the
+  planner rather than on the game page.
+- Quick action hotkeys (set HP, move, wait, unwait, capture, remove) no longer make AWBW's planner ask its server about
+  the building under the unit each time. Only the building conversion hotkeys, which use the answer, still ask.
+  Before, every press sent AWBW a request (120 HP changes sent 120).
+
 ### Fixed
 
 - The multi-hit calculator's damage range for a later attack showed the damage it could deal to what the defender had
